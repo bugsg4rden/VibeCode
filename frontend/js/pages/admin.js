@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Check admin authentication
+  if (!isLoggedIn()) {
+    window.location.href = 'login.html?redirect=admin.html';
+    return;
+  }
+
+  // Verify admin status
+  const user = getCurrentUser();
+  if (!user || !user.is_admin) {
+    alert('Access denied. Admin privileges required.');
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
   // Tab switching
   const tabs = document.querySelectorAll('.admin-tab');
   const panels = document.querySelectorAll('.admin-panel');

@@ -43,8 +43,18 @@ function getUser() {
   return user ? JSON.parse(user) : null;
 }
 
+// Alias for getUser
+function getCurrentUser() {
+  return getUser();
+}
+
 function isLoggedIn() {
   return !!localStorage.getItem('token');
+}
+
+function isAdmin() {
+  const user = getUser();
+  return user && user.is_admin === true;
 }
 
 function requireAuth() {
@@ -55,24 +65,53 @@ function requireAuth() {
 
 function requireAdmin() {
   const user = getUser();
-  if (!user || user.role !== 'admin') {
+  if (!user || !user.is_admin) {
     window.location.href = 'index.html';
+  }
+}
+
+// Update auth UI elements on page
+function updateAuthUI() {
+  const authLinks = document.getElementById('auth-links');
+  const userMenu = document.getElementById('user-menu');
+  const adminLink = document.getElementById('admin-link');
+  
+  if (isLoggedIn()) {
+    if (authLinks) authLinks.style.display = 'none';
+    if (userMenu) userMenu.style.display = 'flex';
+    if (adminLink) adminLink.style.display = isAdmin() ? 'inline' : 'none';
+  } else {
+    if (authLinks) authLinks.style.display = 'block';
+    if (userMenu) userMenu.style.display = 'none';
   }
 }
 
 // Bind login form
 document.addEventListener('DOMContentLoaded', () => {
+  // Update auth UI on all pages
+  updateAuthUI();
+
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const btn = loginForm.querySelector('button[type="submit"]');
+      
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+      
       try {
         await login(email, password);
-        window.location.href = 'dashboard.html';
+        // Check for redirect parameter
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect') || 'dashboard.html';
+        window.location.href = redirect;
       } catch (err) {
         alert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Login';
       }
     });
   }
@@ -84,18 +123,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const username = document.getElementById('username').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password');
+      const btn = registerForm.querySelector('button[type="submit"]');
+      
+      // Validate password match if confirm field exists
+      if (confirmPassword && password !== confirmPassword.value) {
+        alert('Passwords do not match');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      
       try {
         await register(email, password, username);
         alert('Account created! Please log in.');
         window.location.href = 'login.html';
       } catch (err) {
         alert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
       }
     });
   }
 
   // Logout buttons
-  document.querySelectorAll('#logout-btn').forEach(btn => {
-    btn.addEventListener('click', logout);
+  document.querySelectorAll('#logout-btn, .logout-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
   });
 });
