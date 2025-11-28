@@ -1,0 +1,18 @@
+.board-page{padding-top:24px}
+.board-header{margin-bottom:24px}
+.board-header h1{margin:0 0 8px}
+.board-header p{color:var(--text-secondary);margin:0 0 12px}
+.board-meta{display:flex;gap:16px;font-size:14px;color:var(--text-secondary)}
+.badge{padding:2px 8px;border-radius:4px;background:var(--surface);font-size:12px}
+.board-actions{margin-top:12px;display:flex;gap:8px}
+.board-actions button{padding:8px 14px;border:none;border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary);cursor:pointer}
+.btn-danger{background:var(--error) !important}
+.board-images{margin-top:16px}
+.empty-msg{color:var(--text-secondary);text-align:center;padding:48px 0}
+.modal{position:fixed;inset:0;display:none;z-index:100}
+.modal[aria-hidden="false"]{display:block}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.modal-content{position:relative;max-width:420px;margin:80px auto;background:var(--bg-secondary);border-radius:var(--radius-md);padding:24px;z-index:10}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.checkbox-label{display:flex;align-items:center;gap:6px;margin-top:12px}
+.btn-primary{padding:10px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;cursor:pointer}

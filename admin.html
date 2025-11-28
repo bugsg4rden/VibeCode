@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Admin Panel</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pages/admin.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">RefSearch</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Browse</a>
+        <a href="admin.html" class="active">Admin</a>
+      </nav>
+      <div class="user-menu">
+        <span id="admin-name">Admin</span>
+        <button id="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container admin-page">
+    <aside class="admin-sidebar">
+      <nav class="admin-nav">
+        <button class="admin-tab active" data-tab="dashboard">Dashboard</button>
+        <button class="admin-tab" data-tab="pending">Pending Submissions</button>
+        <button class="admin-tab" data-tab="reports">Reports</button>
+        <button class="admin-tab" data-tab="submissions">All Submissions</button>
+        <button class="admin-tab" data-tab="users">Users</button>
+      </nav>
+    </aside>
+
+    <section class="admin-content">
+      <!-- Dashboard -->
+      <div class="admin-panel active" id="panel-dashboard">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="stat-users">0</span>
+            <span class="stat-label">Total Users</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-submissions">0</span>
+            <span class="stat-label">Approved Submissions</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-pending">0</span>
+            <span class="stat-label">Pending Submissions</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-reports">0</span>
+            <span class="stat-label">Open Reports</span>
+          </div>
+        </div>
+        <section class="recent-activity">
+          <h3>Recent Activity</h3>
+          <ul id="activity-list">
+            <!-- activity items -->
+          </ul>
+        </section>
+      </div>
+
+      <!-- Pending Submissions -->
+      <div class="admin-panel" id="panel-pending">
+        <h2>Pending Submissions</h2>
+        <div id="pending-list" class="review-list">
+          <!-- pending cards -->
+        </div>
+        <p id="no-pending" class="empty-msg" style="display:none;">No pending submissions.</p>
+      </div>
+
+      <!-- Reports -->
+      <div class="admin-panel" id="panel-reports">
+        <h2>Reports</h2>
+        <div id="reports-list" class="review-list">
+          <!-- report cards -->
+        </div>
+        <p id="no-reports" class="empty-msg" style="display:none;">No open reports.</p>
+      </div>
+
+      <!-- All Submissions -->
+      <div class="admin-panel" id="panel-submissions">
+        <h2>All Submissions</h2>
+        <div class="filter-bar">
+          <input type="search" id="sub-search" placeholder="Search by title or user...">
+          <select id="sub-status">
+            <option value="">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Title</th>
+              <th>User</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="all-submissions-body">
+            <!-- rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Users -->
+      <div class="admin-panel" id="panel-users">
+        <h2>Users</h2>
+        <div class="filter-bar">
+          <input type="search" id="user-search" placeholder="Search by username or email...">
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body">
+            <!-- rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Tag Editor Modal -->
+  <div class="modal" id="tag-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Edit Tags</h3>
+      <form id="tag-form">
+        <div id="tag-editor-groups">
+          <!-- tag checkboxes -->
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancel-tags">Cancel</button>
+          <button type="submit" class="btn-primary">Save Tags</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/admin.js"></script>
+</body>
+</html>

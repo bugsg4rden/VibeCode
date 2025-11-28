@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Board</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pages/board.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">RefSearch</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Browse</a>
+        <a href="submit.html">Submit</a>
+      </nav>
+      <div class="user-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <button id="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container board-page">
+    <section class="board-header">
+      <h1 id="board-title">Board Name</h1>
+      <p id="board-desc">Board description goes here.</p>
+      <div class="board-meta">
+        <span id="board-owner">by Username</span>
+        <span id="board-visibility" class="badge">Public</span>
+        <span id="board-count">0 images</span>
+      </div>
+      <div class="board-actions" id="owner-actions" style="display:none;">
+        <button id="edit-board-btn">Edit Board</button>
+        <button id="delete-board-btn" class="btn-danger">Delete Board</button>
+      </div>
+    </section>
+
+    <section class="board-images">
+      <div id="board-grid" class="masonry-grid">
+        <!-- images injected -->
+      </div>
+      <p id="empty-msg" class="empty-msg" style="display:none;">This board has no images yet.</p>
+    </section>
+  </main>
+
+  <!-- Edit Board Modal -->
+  <div class="modal" id="edit-board-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Edit Board</h3>
+      <form id="edit-board-form">
+        <label>Board Name</label>
+        <input type="text" id="edit-board-name" required>
+        <label>Description</label>
+        <textarea id="edit-board-desc"></textarea>
+        <label class="checkbox-label">
+          <input type="checkbox" id="edit-board-public"> Make public
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="cancel-edit">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/board.js"></script>
+</body>
+</html>

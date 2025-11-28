@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Dashboard</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">RefSearch</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Browse</a>
+        <a href="submit.html">Submit</a>
+      </nav>
+      <div class="user-menu">
+        <span id="user-name">Username</span>
+        <button id="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container dashboard">
+    <aside class="sidebar">
+      <nav class="dash-nav">
+        <button class="dash-tab active" data-tab="boards">My Boards</button>
+        <button class="dash-tab" data-tab="submissions">My Submissions</button>
+        <button class="dash-tab" data-tab="settings">Settings</button>
+      </nav>
+    </aside>
+
+    <section class="dash-content">
+      <!-- My Boards -->
+      <div class="tab-panel active" id="panel-boards">
+        <div class="panel-header">
+          <h2>My Boards</h2>
+          <button id="new-board-btn" class="btn-primary">+ New Board</button>
+        </div>
+        <div id="boards-grid" class="boards-grid">
+          <!-- board cards injected -->
+        </div>
+      </div>
+
+      <!-- My Submissions -->
+      <div class="tab-panel" id="panel-submissions">
+        <div class="panel-header">
+          <h2>My Submissions</h2>
+        </div>
+        <table class="submissions-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-body">
+            <!-- rows injected -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Settings -->
+      <div class="tab-panel" id="panel-settings">
+        <h2>Account Settings</h2>
+        <form id="settings-form" class="settings-form">
+          <label>Username</label>
+          <input type="text" id="settings-username">
+          <label>Email</label>
+          <input type="email" id="settings-email" disabled>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- New Board Modal -->
+  <div class="modal" id="new-board-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Create New Board</h3>
+      <form id="new-board-form">
+        <label>Board Name</label>
+        <input type="text" id="board-name" required>
+        <label>Description</label>
+        <textarea id="board-desc"></textarea>
+        <label class="checkbox-label">
+          <input type="checkbox" id="board-public"> Make public
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="cancel-board">Cancel</button>
+          <button type="submit" class="btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/dashboard.js"></script>
+</body>
+</html>

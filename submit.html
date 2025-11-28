@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Submit Reference</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pages/submit.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">RefSearch</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Browse</a>
+        <a href="submit.html" class="active">Submit</a>
+      </nav>
+      <div class="user-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <button id="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container submit-page">
+    <h1>Submit a Reference Image</h1>
+    <p class="intro">Share a reference image with the community. Paste a link from DeviantArt, ArtStation, Pinterest, or a direct image URL.</p>
+
+    <form id="submit-form" class="submit-form">
+      <section class="form-section">
+        <label for="source-url">Image URL</label>
+        <input type="url" id="source-url" placeholder="https://www.deviantart.com/..." required>
+        <button type="button" id="preview-btn">Preview</button>
+      </section>
+
+      <section class="preview-section" id="preview-section" style="display:none;">
+        <img id="preview-img" src="" alt="Preview">
+      </section>
+
+      <section class="form-section">
+        <label for="title">Title</label>
+        <input type="text" id="title" placeholder="e.g. Dynamic Running Pose" required>
+      </section>
+
+      <section class="form-section">
+        <label for="credits">Credits / Artist</label>
+        <input type="text" id="credits" placeholder="Artist name or source">
+      </section>
+
+      <section class="form-section tags-section">
+        <h3>Tags</h3>
+
+        <label>Reference Type</label>
+        <div class="tag-group" id="tag-type">
+          <label><input type="checkbox" value="full-body"> Full Body</label>
+          <label><input type="checkbox" value="portrait"> Portrait</label>
+          <label><input type="checkbox" value="expression"> Expression</label>
+          <label><input type="checkbox" value="hands"> Hands</label>
+        </div>
+
+        <label>Lighting</label>
+        <div class="tag-group" id="tag-lighting">
+          <label><input type="checkbox" value="natural"> Natural</label>
+          <label><input type="checkbox" value="studio"> Studio</label>
+          <label><input type="checkbox" value="dramatic"> Dramatic</label>
+          <label><input type="checkbox" value="backlit"> Backlit</label>
+        </div>
+
+        <label>Gender</label>
+        <div class="tag-group" id="tag-gender">
+          <label><input type="checkbox" value="male"> Male</label>
+          <label><input type="checkbox" value="female"> Female</label>
+          <label><input type="checkbox" value="neutral"> Neutral</label>
+        </div>
+
+        <label>Body Type</label>
+        <div class="tag-group" id="tag-body">
+          <label><input type="checkbox" value="slim"> Slim</label>
+          <label><input type="checkbox" value="average"> Average</label>
+          <label><input type="checkbox" value="muscular"> Muscular</label>
+          <label><input type="checkbox" value="plus-size"> Plus-size</label>
+        </div>
+
+        <label>Action</label>
+        <div class="tag-group" id="tag-action">
+          <label><input type="checkbox" value="standing"> Standing</label>
+          <label><input type="checkbox" value="sitting"> Sitting</label>
+          <label><input type="checkbox" value="running"> Running</label>
+          <label><input type="checkbox" value="jumping"> Jumping</label>
+          <label><input type="checkbox" value="lying"> Lying</label>
+          <label><input type="checkbox" value="stationary"> Stationary</label>
+        </div>
+
+        <label>Camera Angle</label>
+        <div class="tag-group" id="tag-angle">
+          <label><input type="checkbox" value="front"> Front</label>
+          <label><input type="checkbox" value="side"> Side</label>
+          <label><input type="checkbox" value="back"> Back</label>
+          <label><input type="checkbox" value="3/4"> 3/4</label>
+          <label><input type="checkbox" value="high-angle"> High Angle</label>
+          <label><input type="checkbox" value="low-angle"> Low Angle</label>
+        </div>
+      </section>
+
+      <section class="form-section guidelines">
+        <h3>Submission Guidelines</h3>
+        <ul>
+          <li>Only submit images you have permission to share or that are publicly available.</li>
+          <li>Give proper credit to the original artist.</li>
+          <li>No NSFW, offensive, or copyrighted content.</li>
+          <li>Submissions are reviewed by admins before going live.</li>
+        </ul>
+      </section>
+
+      <button type="submit" class="btn-primary btn-large">Submit for Review</button>
+    </form>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/submit.js"></script>
+</body>
+</html>
