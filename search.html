@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Browse</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/pages/search.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">RefSearch</div>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Browse</a>
+        <a href="submit.html">Submit</a>
+      </nav>
+      <div class="auth-links">
+        <a href="login.html">Log in</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container search-page">
+    <aside class="filters">
+      <h3>Filters</h3>
+      <label>Source</label>
+      <select id="filter-source">
+        <option value="all">All</option>
+        <option value="submissions">User Submissions</option>
+        <option value="unsplash">Unsplash</option>
+        <option value="pexels">Pexels</option>
+      </select>
+
+      <label>Lighting</label>
+      <select id="filter-lighting">
+        <option value="">Any</option>
+      </select>
+
+      <label>Gender</label>
+      <select id="filter-gender">
+        <option value="">Any</option>
+      </select>
+
+      <label>Body Type</label>
+      <select id="filter-body">
+        <option value="">Any</option>
+      </select>
+
+      <label>Action</label>
+      <select id="filter-action">
+        <option value="">Any</option>
+      </select>
+
+      <label>Camera Angle</label>
+      <select id="filter-angle">
+        <option value="">Any</option>
+      </select>
+
+      <button id="apply-filters">Apply</button>
+    </aside>
+
+    <section class="results">
+      <div class="search-bar">
+        <input id="search-input" type="search" placeholder="Search references...">
+        <button id="search-btn">Search</button>
+      </div>
+
+      <div id="results-grid" class="masonry-grid">
+        <!-- results -->
+      </div>
+
+      <div id="loading" class="loading">Loading...</div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/search.js"></script>
+</body>
+</html>

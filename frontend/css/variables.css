@@ -1,0 +1,22 @@
+/* Color variables - dark mode */
+:root{
+  --bg-primary: #121212;
+  --bg-secondary: #1E1E1E;
+  --surface: #2D2D2D;
+  --accent: #E60023;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --muted: #666666;
+  --border: #404040;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --gap: 16px;
+}
+
+html,body{height:100%;background:var(--bg-primary);color:var(--text-primary);font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}

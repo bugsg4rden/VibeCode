@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RefSearch — Viewer</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components/viewer.css">
+</head>
+<body>
+  <div class="viewer-modal" id="viewer-modal" aria-hidden="true">
+    <div class="viewer-backdrop"></div>
+    <div class="viewer-content">
+      <button class="viewer-close" id="viewer-close">Close</button>
+      <div class="viewer-main">
+        <div class="viewer-canvas" id="viewer-canvas">
+          <img id="viewer-image" src="" alt="Reference image">
+        </div>
+        <aside class="viewer-controls">
+          <h3 id="viewer-title">Title</h3>
+          <p id="viewer-credits">Credits</p>
+          <div class="tool-row">
+            <button id="btn-flip-x">Flip H</button>
+            <button id="btn-flip-y">Flip V</button>
+            <button id="btn-grid">Grid</button>
+            <button id="btn-grayscale">Grayscale</button>
+          </div>
+          <div class="zoom-row">
+            <label>Zoom</label>
+            <input id="zoom-range" type="range" min="50" max="400" value="100">
+          </div>
+          <div class="save-row">
+            <button id="save-board">Save to Board</button>
+            <button id="report-image">Report Image</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/components/imageViewer.js"></script>
+</body>
+</html>

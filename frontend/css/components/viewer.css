@@ -1,0 +1,11 @@
+.viewer-modal{position:fixed;inset:0;display:none}
+.viewer-modal[aria-hidden="false"]{display:block}
+.viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.6)}
+.viewer-content{position:relative;max-width:1100px;margin:40px auto;background:var(--bg-secondary);border-radius:12px;padding:16px;z-index:10;display:flex}
+.viewer-main{display:flex;width:100%}
+.viewer-canvas{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.viewer-canvas img{max-width:650px;max-height:80vh}
+.viewer-controls{width:320px;padding-left:16px}
+.tool-row button{margin-right:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--surface);color:var(--text-primary)}
+.zoom-row{margin-top:12px}
+.save-row{margin-top:16px}
