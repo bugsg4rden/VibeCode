@@ -4,42 +4,72 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>RefSearch — Viewer</title>
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/components/viewer.css">
+  <link rel="stylesheet" href="frontend/css/variables.css">
+  <link rel="stylesheet" href="frontend/css/global.css">
+  <link rel="stylesheet" href="frontend/css/components/viewer.css">
 </head>
 <body>
-  <div class="viewer-modal" id="viewer-modal" aria-hidden="true">
+  <div class="viewer-modal" id="viewer-modal" aria-hidden="false">
     <div class="viewer-backdrop"></div>
     <div class="viewer-content">
-      <button class="viewer-close" id="viewer-close">Close</button>
+      <button class="viewer-close" id="viewer-close" aria-label="Close viewer">&times;</button>
       <div class="viewer-main">
         <div class="viewer-canvas" id="viewer-canvas">
-          <img src="" alt="Reference image">
+          <img src="" alt="Reference image" id="viewer-image">
+          <div class="grid-overlay" id="grid-overlay"></div>
         </div>
         <aside class="viewer-controls">
-          <h3 id="viewer-title">Title</h3>
-          <p id="viewer-credits">Credits</p>
-          <div class="tool-row">
-            <button id="btn-flip-x">Flip H</button>
-            <button id="btn-flip-y">Flip V</button>
-            <button id="btn-grid">Grid</button>
-            <button id="btn-grayscale">Grayscale</button>
+          <h3 id="viewer-title">Untitled</h3>
+          <p id="viewer-credits" class="credits"></p>
+          
+          <div class="tool-section">
+            <h4>Transform</h4>
+            <div class="tool-row">
+              <button class="tool-btn" id="btn-flip-x" title="Flip Horizontal">
+                <span>↔</span> Flip H
+              </button>
+              <button class="tool-btn" id="btn-flip-y" title="Flip Vertical">
+                <span>↕</span> Flip V
+              </button>
+            </div>
           </div>
-          <div class="zoom-row">
-            <label>Zoom</label>
-            <input id="zoom-range" type="range" min="50" max="400" value="100">
+
+          <div class="tool-section">
+            <h4>Overlays</h4>
+            <div class="tool-row">
+              <button class="tool-btn" id="btn-grid" title="Toggle Grid">
+                <span>⊞</span> Grid
+              </button>
+              <button class="tool-btn" id="btn-grayscale" title="Toggle Grayscale">
+                <span>◐</span> Grayscale
+              </button>
+            </div>
           </div>
-          <div class="save-row">
-            <button id="save-board">Save to Board</button>
-            <button id="report-image">Report Image</button>
+
+          <div class="tool-section">
+            <h4>Zoom</h4>
+            <div class="zoom-row">
+              <input id="zoom-range" type="range" min="25" max="300" value="100">
+              <span id="zoom-value">100%</span>
+            </div>
+          </div>
+
+          <div class="tool-section">
+            <h4>Actions</h4>
+            <div class="action-row">
+              <button class="btn btn-primary" id="btn-save-board">Save to Board</button>
+              <button class="btn btn-secondary" id="btn-download">Download</button>
+            </div>
+            <button class="btn btn-text btn-report" id="btn-report">Report Image</button>
           </div>
         </aside>
       </div>
     </div>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="js/components/imageViewer.js"></script>
+  <script src="frontend/config.js"></script>
+  <script src="frontend/js/api.js"></script>
+  <script src="frontend/js/auth.js"></script>
+  <script src="frontend/js/components/imageViewer.js"></script>
 </body>
 </html>
