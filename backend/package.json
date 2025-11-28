@@ -4,12 +4,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "check-links": "node -e \"require('./services/deadLinkChecker').checkDeadLinks()\""
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@supabase/supabase-js": "^2.39.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-    "node-fetch": "^3.4.0"
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   }
 }

@@ -4,26 +4,32 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>RefSearch — Find art references</title>
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="frontend/css/variables.css">
+  <link rel="stylesheet" href="frontend/css/global.css">
 </head>
 <body>
   <header class="site-header">
-    <div class="container">
-      <div class="logo">RefSearch</div>
+    <div class="container header-inner">
+      <a href="index.html" class="logo">RefSearch</a>
       <nav class="main-nav">
-        <a href="index.html">Home</a>
+        <a href="index.html" class="active">Home</a>
         <a href="search.html">Browse</a>
         <a href="submit.html">Submit</a>
       </nav>
-      <div class="auth-links">
+      <div class="auth-links" id="auth-links">
         <a href="login.html">Log in</a>
+      </div>
+      <div class="user-menu" id="user-menu" style="display:none;">
+        <a href="dashboard.html">Dashboard</a>
+        <button id="logout-btn">Log out</button>
       </div>
     </div>
   </header>
 
   <main class="container hero">
     <h1>Search poses & expressions</h1>
+    <p class="hero-subtitle">Find the perfect art reference for your next masterpiece</p>
+    
     <form id="search-form" class="search-form">
       <input id="search-input" type="search" placeholder="Type keywords like 'running male 3/4 view'" aria-label="Search">
       <button type="submit">Search</button>
@@ -32,15 +38,27 @@
     <section class="quick-links">
       <button data-q="poses">Poses</button>
       <button data-q="expressions">Expressions</button>
+      <button data-q="portrait">Portraits</button>
+      <button data-q="action">Action</button>
     </section>
 
-    <section class="trending-grid" id="trending-grid">
-      <!-- Trending images will be injected here -->
+    <section class="home-section">
+      <h2>Recent References</h2>
+      <div class="masonry-grid" id="trending-grid">
+        <!-- Trending images will be injected here -->
+      </div>
     </section>
   </main>
 
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/pages/home.js"></script>
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2025 RefSearch. Built for artists.</p>
+    </div>
+  </footer>
+
+  <script src="frontend/config.js"></script>
+  <script src="frontend/js/api.js"></script>
+  <script src="frontend/js/auth.js"></script>
+  <script src="frontend/js/pages/home.js"></script>
 </body>
 </html>
