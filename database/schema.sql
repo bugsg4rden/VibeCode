@@ -73,3 +73,38 @@ CREATE TABLE IF NOT EXISTS reports (
   reviewed_by uuid,
   reviewed_at timestamp
 );
+
+-- Insert default tags
+INSERT INTO tags (name, category) VALUES
+  ('photo', 'type'),
+  ('drawing', 'type'),
+  ('3d', 'type'),
+  ('natural', 'lighting'),
+  ('studio', 'lighting'),
+  ('dramatic', 'lighting'),
+  ('male', 'gender'),
+  ('female', 'gender'),
+  ('non-binary', 'gender'),
+  ('slim', 'body_type'),
+  ('average', 'body_type'),
+  ('muscular', 'body_type'),
+  ('plus-size', 'body_type'),
+  ('action', 'action'),
+  ('stationary', 'action'),
+  ('front', 'camera_angle'),
+  ('side', 'camera_angle'),
+  ('back', 'camera_angle'),
+  ('above', 'camera_angle'),
+  ('below', 'camera_angle')
+ON CONFLICT DO NOTHING;
+
+-- =====================================================
+-- HOW TO CREATE AN ADMIN ACCOUNT:
+-- =====================================================
+-- 1. First, register a normal account through the app
+-- 2. Then run this SQL in Supabase SQL Editor (replace the email):
+--
+-- UPDATE users SET role = 'admin' WHERE id = (
+--   SELECT id FROM auth.users WHERE email = 'your-admin@email.com'
+-- );
+-- =====================================================

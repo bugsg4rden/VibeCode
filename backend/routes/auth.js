@@ -81,7 +81,8 @@ router.post('/login', async (req, res, next) => {
         id: data.user.id,
         email: data.user.email,
         username: profile.username,
-        role: profile.role
+        role: profile.role,
+        is_admin: profile.role === 'admin'
       }
     });
   } catch (err) {

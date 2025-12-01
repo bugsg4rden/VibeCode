@@ -2,34 +2,48 @@
 // Uses Supabase client via CONFIG
 
 async function register(email, password, username) {
-  const res = await fetch(CONFIG.API_URL + '/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, username })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'Registration failed');
+  try {
+    const res = await fetch(CONFIG.API_URL + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, username })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Registration failed');
+    }
+    return res.json();
+  } catch (err) {
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Cannot connect to server. Make sure the backend is running on ' + CONFIG.API_URL);
+    }
+    throw err;
   }
-  return res.json();
 }
 
 async function login(email, password) {
-  const res = await fetch(CONFIG.API_URL + '/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'Login failed');
+  try {
+    const res = await fetch(CONFIG.API_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Login failed');
+    }
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
+    return data;
+  } catch (err) {
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Cannot connect to server. Make sure the backend is running on ' + CONFIG.API_URL);
+    }
+    throw err;
   }
-  const data = await res.json();
-  if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-  }
-  return data;
 }
 
 function logout() {
