@@ -1,8 +1,36 @@
 // Auth helper functions
-// Uses Supabase client via CONFIG
+// Can work with Supabase directly OR with backend API
+
+// Initialize Supabase client if configured
+let supabaseClient = null;
+if (typeof CONFIG !== 'undefined' && SUPABASE_CONFIGURED) {
+  // Load Supabase from CDN - will be added to HTML
+  if (typeof supabase !== 'undefined') {
+    supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  }
+}
 
 async function register(email, password, username) {
-  try {
+  // Check if Supabase is configured
+  if (!SUPABASE_CONFIGURED) {
+    // Demo mode - store locally
+    const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+    if (users.find(u => u.email === email)) {
+      throw new Error('Email already registered');
+    }
+    users.push({ 
+      id: Date.now().toString(), 
+      email, 
+      password, 
+      username, 
+      role: users.length === 0 ? 'admin' : 'user' // First user is admin
+    });
+    localStorage.setItem('demo_users', JSON.stringify(users));
+    return { message: 'Registration successful' };
+  }
+
+  // Use backend API if configured
+  if (CONFIG.API_URL) {
     const res = await fetch(CONFIG.API_URL + '/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -13,16 +41,37 @@ async function register(email, password, username) {
       throw new Error(err.message || 'Registration failed');
     }
     return res.json();
-  } catch (err) {
-    if (err.message === 'Failed to fetch') {
-      throw new Error('Cannot connect to server. Make sure the backend is running on ' + CONFIG.API_URL);
-    }
-    throw err;
   }
+
+  // Direct Supabase auth
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 async function login(email, password) {
-  try {
+  // Check if Supabase is configured
+  if (!SUPABASE_CONFIGURED) {
+    // Demo mode - check local storage
+    const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) {
+      throw new Error('Invalid email or password');
+    }
+    const token = 'demo_token_' + user.id;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      is_admin: user.role === 'admin'
+    }));
+    return { token, user };
+  }
+
+  // Use backend API if configured
+  if (CONFIG.API_URL) {
     const res = await fetch(CONFIG.API_URL + '/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,12 +87,18 @@ async function login(email, password) {
       localStorage.setItem('user', JSON.stringify(data.user));
     }
     return data;
-  } catch (err) {
-    if (err.message === 'Failed to fetch') {
-      throw new Error('Cannot connect to server. Make sure the backend is running on ' + CONFIG.API_URL);
-    }
-    throw err;
   }
+
+  // Direct Supabase auth
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(error.message);
+  localStorage.setItem('token', data.session.access_token);
+  localStorage.setItem('user', JSON.stringify({
+    id: data.user.id,
+    email: data.user.email,
+    is_admin: false
+  }));
+  return data;
 }
 
 function logout() {

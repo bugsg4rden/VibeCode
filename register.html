@@ -11,22 +11,15 @@
   <main class="container auth-page">
     <form id="register-form" class="auth-form">
       <h2>Create account</h2>
+      <div id="demo-notice" class="notice notice-info" style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem;">
+        <strong>Demo Mode:</strong> The first registered account automatically becomes an admin.
+      </div>
       <label>Username</label>
-      <br>
-      <input type="text" id="username" required>
-      <br>
-      <br>
+      <input type="text" id="username" required placeholder="Choose a username">
       <label>Email</label>
-      <br>
-      <input type="email" id="email" required>
-      <br>
-      <br>
+      <input type="email" id="email" required placeholder="your@email.com">
       <label>Password</label>
-      <br>
-      <input type="password" id="password" required>
-      <br>
-      <br>
-      <br>
+      <input type="password" id="password" required placeholder="Choose a password (min 6 chars)" minlength="6">
       <button type="submit">Create account</button>
       <p>Already have an account? <a href="login.html">Login</a></p>
     </form>
@@ -34,5 +27,11 @@
 
   <script src="frontend/config.js"></script>
   <script src="frontend/js/auth.js"></script>
+  <script>
+    // Hide demo notice if Supabase is configured
+    if (typeof SUPABASE_CONFIGURED !== 'undefined' && SUPABASE_CONFIGURED) {
+      document.getElementById('demo-notice').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
