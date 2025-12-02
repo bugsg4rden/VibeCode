@@ -6,13 +6,13 @@ A Pinterest-inspired web application for artists to search, save, and organize r
 
 ## Features
 
-- 🔍 **Multi-Source Search** - Search across Unsplash, Pexels, and user submissions
-- 📁 **Personal Boards** - Create and organize boards for your reference collections
-- 🎨 **Advanced Viewer** - Flip, grayscale, grid overlay, and zoom tools
-- 🏷️ **Smart Filtering** - Filter by lighting, pose type, body type, camera angle
-- 👤 **User Accounts** - Save favorites and manage submissions
-- 📤 **Community Submissions** - Submit and share reference images
-- 🌙 **Dark Mode** - Easy on the eyes for long drawing sessions
+- **Multi-Source Search** - Search across Unsplash, Pexels, and user submissions
+- **Personal Boards** - Create and organize boards for your reference collections
+- **Advanced Viewer** - Flip, grayscale, grid overlay, and zoom tools
+- **Smart Filtering** - Filter by lighting, pose type, body type, camera angle
+- **User Accounts** - Save favorites and manage submissions
+- **Community Submissions** - Submit and share reference images
+- **Dark Mode** - Easy on the eyes for long drawing sessions
 
 ## Tech Stack
 
