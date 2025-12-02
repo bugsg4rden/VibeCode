@@ -34,8 +34,15 @@
       <select id="filter-source">
         <option value="all">All</option>
         <option value="submissions">User Submissions</option>
-        <option value="unsplash">Unsplash</option>
-        <option value="pexels">Pexels</option>
+      </select>
+
+      <label>Reference Type</label>
+      <select id="filter-type">
+        <option value="">Any</option>
+        <option value="full-body">Full Body</option>
+        <option value="portrait">Portrait</option>
+        <option value="expression">Expression</option>
+        <option value="hands">Hands</option>
       </select>
 
       <label>Lighting</label>
@@ -67,12 +74,11 @@
       <label>Action</label>
       <select id="filter-action">
         <option value="">Any</option>
-        
         <option value="standing">Standing</option>
         <option value="sitting">Sitting</option>
         <option value="running">Running</option>
         <option value="jumping">Jumping</option>
-        <option value="lying-down">Lying Down</option>
+        <option value="lying">Lying</option>
         <option value="stationary">Stationary</option>
       </select>
 
@@ -81,13 +87,14 @@
         <option value="">Any</option>
         <option value="front">Front</option>
         <option value="side">Side</option>
-        <option value="3-4">3/4</option>
         <option value="back">Back</option>
-        <option value="top-down">Top Down</option>
-        <option value="bottom-up">Bottom Up</option>
+        <option value="3/4">3/4</option>
+        <option value="high-angle">High Angle</option>
+        <option value="low-angle">Low Angle</option>
       </select>
 
-      <button id="apply-filters">Apply</button>
+      <button id="apply-filters">Apply Filters</button>
+      <button id="clear-filters">Clear All</button>
     </aside>
 
     <section class="results">
@@ -100,7 +107,8 @@
         <!-- results -->
       </div>
 
-      <div id="loading" class="loading">Loading...</div>
+      <div id="loading" class="loading" style="display:none;">Loading...</div>
+      <div id="no-results" style="display:none;">No results found</div>
     </section>
   </main>
 

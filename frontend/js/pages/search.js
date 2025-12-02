@@ -5,38 +5,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const url = new URL(location.href);
   const q = url.searchParams.get('q') || '';
   const input = document.getElementById('search-input');
-  input.value = q;
+  if (input) input.value = q;
 
   const resultsGrid = document.getElementById('results-grid');
   const loading = document.getElementById('loading');
   const noResults = document.getElementById('no-results');
 
-  async function doSearch() {
-    const query = input.value.trim().toLowerCase();
-    const source = document.getElementById('filter-source')?.value || 'all';
+  function doSearch() {
+    const query = input ? input.value.trim().toLowerCase() : '';
     
-    loading.style.display = 'block';
-    noResults.style.display = 'none';
-    resultsGrid.innerHTML = '';
-
-    let results = [];
+    if (loading) loading.style.display = 'block';
+    if (noResults) noResults.style.display = 'none';
+    if (resultsGrid) resultsGrid.innerHTML = '';
 
     // Demo mode - search local submissions
     if (!CONFIG.API_URL) {
       const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+      console.log('All submissions:', submissions);
+      
       const approved = submissions.filter(s => s.status === 'approved');
+      console.log('Approved submissions:', approved);
       
       // Filter by search query
       let filtered = approved;
       if (query) {
         filtered = approved.filter(s => 
-          s.title.toLowerCase().includes(query) ||
+          (s.title && s.title.toLowerCase().includes(query)) ||
           (s.tags && s.tags.some(t => t.toLowerCase().includes(query))) ||
           (s.credits && s.credits.toLowerCase().includes(query))
         );
       }
 
       // Get selected filters
+      const typeFilter = document.getElementById('filter-type')?.value;
       const lightingFilter = document.getElementById('filter-lighting')?.value;
       const genderFilter = document.getElementById('filter-gender')?.value;
       const bodyFilter = document.getElementById('filter-body')?.value;
@@ -44,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const angleFilter = document.getElementById('filter-angle')?.value;
 
       // Apply tag filters
+      if (typeFilter) {
+        filtered = filtered.filter(s => s.tags && s.tags.includes(typeFilter));
+      }
       if (lightingFilter) {
         filtered = filtered.filter(s => s.tags && s.tags.includes(lightingFilter));
       }
@@ -60,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered = filtered.filter(s => s.tags && s.tags.includes(angleFilter));
       }
 
-      results = filtered.map(s => ({
+      const results = filtered.map(s => ({
         id: s.id,
         title: s.title,
         url: s.image_url,
@@ -70,13 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
         source: 'submissions'
       }));
 
-      loading.style.display = 'none';
+      if (loading) loading.style.display = 'none';
 
       if (results.length === 0) {
-        noResults.innerHTML = query 
-          ? `No results found for "${query}". Try different keywords or <a href="submit.html">submit your own references</a>!`
-          : 'No approved submissions yet. <a href="submit.html">Be the first to submit!</a>';
-        noResults.style.display = 'block';
+        if (noResults) {
+          noResults.innerHTML = query 
+            ? `No results found for "${query}". Try different keywords or <a href="submit.html">submit your own references</a>!`
+            : 'No approved submissions yet. <a href="submit.html">Be the first to submit!</a>';
+          noResults.style.display = 'block';
+        }
         return;
       }
 
@@ -84,28 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // With backend API
-    try {
-      const params = { q: query || 'pose', source };
-      const data = await apiGet('/search', params);
-      
-      loading.style.display = 'none';
-
-      if (!data.results || data.results.length === 0) {
-        noResults.style.display = 'block';
-        return;
-      }
-
-      renderResults(data.results);
-    } catch (err) {
-      console.error('Search error:', err);
-      loading.style.display = 'none';
-      noResults.textContent = 'Failed to load results. Make sure the backend is running.';
-      noResults.style.display = 'block';
-    }
+    // With backend API - not used in demo mode
+    console.log('Backend mode - API_URL:', CONFIG.API_URL);
   }
 
   function renderResults(results) {
+    if (!resultsGrid) return;
     resultsGrid.innerHTML = '';
     results.forEach(item => {
       const card = document.createElement('div');
@@ -133,20 +123,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Search button
-  document.getElementById('search-btn').addEventListener('click', () => {
-    const term = input.value.trim();
-    const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set('q', term);
-    window.history.pushState({}, '', newUrl);
-    doSearch();
-  });
+  const searchBtn = document.getElementById('search-btn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const term = input ? input.value.trim() : '';
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('q', term);
+      window.history.pushState({}, '', newUrl);
+      doSearch();
+    });
+  }
 
   // Enter key in search input
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('search-btn').click();
-    }
-  });
+  if (input) {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const searchBtn = document.getElementById('search-btn');
+        if (searchBtn) searchBtn.click();
+      }
+    });
+  }
 
   // Apply filters
   const applyBtn = document.getElementById('apply-filters');
@@ -161,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.filters select').forEach(select => {
         select.selectedIndex = 0;
       });
-      input.value = '';
+      if (input) input.value = '';
       doSearch();
     });
   }
