@@ -145,6 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnReset) {
     btnReset.addEventListener('click', resetView);
   }
+
+  // Flip X (horizontal)
+  if (btnFlipX) {
+    btnFlipX.addEventListener('click', () => {
+      flipX = -flipX;
+      updateTransform();
       btnFlipX.classList.toggle('active', flipX === -1);
     });
   }
@@ -162,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnGray) {
     btnGray.addEventListener('click', () => {
       gray = !gray;
-      img.style.filter = gray ? 'grayscale(100%)' : 'none';
+      if (img) img.style.filter = gray ? 'grayscale(100%)' : 'none';
       btnGray.classList.toggle('active', gray);
     });
   }

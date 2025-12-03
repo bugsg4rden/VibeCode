@@ -287,8 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><img src="${escapeHtml(sub.image_url)}" alt="" style="max-width:50px;max-height:50px;object-fit:cover;"></td>
           <td>${escapeHtml(sub.title)}</td>
           <td>${escapeHtml(sub.username) || 'Unknown'}</td>
-          <td><span class="badge badge-${sub.status === 'approved' ? 'success' : sub.status === 'rejected' ? 'danger' : 'warning'}">${sub.status}</span></td>
-          <td>${new Date(sub.created_at).toLocaleDateString()}</td>
+          <td><span class="badge badge-${escapeHtml(sub.status) === 'approved' ? 'success' : escapeHtml(sub.status) === 'rejected' ? 'danger' : 'warning'}">${escapeHtml(sub.status)}</span></td>
+          <td>${new Date(escapeHtml(sub.created_at)).toLocaleDateString()}</td>
           <td>
             <button class="btn btn-sm btn-danger btn-delete" data-id="${sub.id}">Delete</button>
           </td>
