@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'review-card';
         card.innerHTML = `
-          <img src="${sub.image_url}" alt="" style="max-width:150px;max-height:150px;object-fit:cover;">
+          <img src="${escapeHtml(sub.image_url)}" alt="" style="max-width:150px;max-height:150px;object-fit:cover;">
           <div class="review-card-body">
             <h4>${escapeHtml(sub.title)}</h4>
             <p>by ${escapeHtml(sub.username) || 'Unknown'} • ${new Date(sub.created_at).toLocaleDateString()}</p>
