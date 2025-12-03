@@ -14,7 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let extractedImageUrl = null;
 
-  // Preview button handler
+  // Check if URL is a direct image link
+  function isImageUrl(url) {
+    return /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url);
+  }
+
+  // Preview button handler - works without backend!
   if (previewBtn) {
     previewBtn.addEventListener('click', async () => {
       const url = sourceInput.value.trim();
@@ -26,6 +31,31 @@ document.addEventListener('DOMContentLoaded', () => {
       previewBtn.disabled = true;
       previewBtn.textContent = 'Loading...';
 
+      // In demo mode, just try to load the image directly
+      if (!CONFIG.API_URL) {
+        // Check if it's a direct image URL
+        if (isImageUrl(url)) {
+          extractedImageUrl = url;
+          previewImg.src = url;
+          previewImg.onload = () => {
+            previewSection.style.display = 'block';
+            previewBtn.textContent = 'Preview';
+            previewBtn.disabled = false;
+          };
+          previewImg.onerror = () => {
+            alert('Could not load image. Make sure the URL points directly to an image file (.jpg, .png, etc.)');
+            previewBtn.textContent = 'Preview';
+            previewBtn.disabled = false;
+          };
+        } else {
+          alert('Demo Mode: Please use a direct image URL (ending in .jpg, .png, .gif, etc.)\n\nExample: https://example.com/image.jpg');
+          previewBtn.textContent = 'Preview';
+          previewBtn.disabled = false;
+        }
+        return;
+      }
+
+      // With backend, use the extract API
       try {
         const data = await apiPost('/extract-image', { url });
         if (data.image_url) {
@@ -93,6 +123,30 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
+      // Demo mode - store locally
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+        const newSubmission = {
+          id: Date.now().toString(),
+          user_id: user.id,
+          username: user.username,
+          source_url,
+          image_url: extractedImageUrl || source_url,
+          title,
+          credits,
+          tags,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+        submissions.push(newSubmission);
+        localStorage.setItem('demo_submissions', JSON.stringify(submissions));
+        alert('Submission sent for review! Thank you for contributing.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      // With backend
       try {
         await apiAuthPost('/submissions', { 
           source_url, 

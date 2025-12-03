@@ -115,6 +115,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('submissions-body');
     if (!tbody) return;
 
+    // Demo mode - load from localStorage
+    if (!CONFIG.API_URL) {
+      const user = getCurrentUser();
+      const allSubmissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+      const mySubmissions = allSubmissions.filter(s => s.user_id === user.id);
+      
+      tbody.innerHTML = '';
+      
+      if (mySubmissions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No submissions yet</td></tr>';
+        return;
+      }
+
+      mySubmissions.forEach(sub => {
+        const tr = document.createElement('tr');
+        const statusClass = sub.status === 'approved' ? 'badge-success' : 
+                           sub.status === 'rejected' ? 'badge-danger' : 'badge-pending';
+        tr.innerHTML = `
+          <td><img src="${escapeHtml(escapeHtml(sub.image_url))}" alt="${escapeHtml(sub.title)}" class="thumb" style="max-width:60px;max-height:60px;object-fit:cover;"></td>
+          <td>${escapeHtml(sub.title)}</td>
+          <td><span class="badge ${statusClass}">${escapeHtml(sub.status)}</span></td>
+          <td>${new Date(escapeHtml(sub.created_at)).toLocaleDateString()}</td>
+          <td><button class="btn btn-sm btn-danger btn-delete" data-id="${escapeHtml(sub.id)}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Add delete handlers for demo mode
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm('Are you sure you want to delete this submission?')) {
+            const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+            const filtered = submissions.filter(s => s.id !== btn.dataset.id);
+            localStorage.setItem('demo_submissions', JSON.stringify(filtered));
+            loadSubmissions();
+          }
+        });
+      });
+      return;
+    }
+
+    // With backend
     try {
       const data = await apiAuthGet('/submissions/my');
       tbody.innerHTML = '';
