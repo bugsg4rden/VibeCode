@@ -109,7 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Add title overlay
       const overlay = document.createElement('div');
       overlay.className = 'image-card-overlay';
-      overlay.innerHTML = `<span>${item.title || 'Untitled'}</span>`;
+      overlay.innerHTML = `<span>${escapeHtml(item.title) || 'Untitled'}</span>`;
+      
       
       card.addEventListener('click', () => {
         localStorage.setItem('viewerImage', JSON.stringify(item));

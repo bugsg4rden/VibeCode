@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
       submissions.forEach(sub => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><img src="${sub.image_url}" alt="" style="max-width:50px;max-height:50px;object-fit:cover;"></td>
+          <td><img src="${escapeHtml(sub.image_url)}" alt="" style="max-width:50px;max-height:50px;object-fit:cover;"></td>
           <td>${escapeHtml(sub.title)}</td>
           <td>${escapeHtml(sub.username) || 'Unknown'}</td>
           <td><span class="badge badge-${sub.status === 'approved' ? 'success' : sub.status === 'rejected' ? 'danger' : 'warning'}">${sub.status}</span></td>
