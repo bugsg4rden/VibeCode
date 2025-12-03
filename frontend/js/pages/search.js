@@ -11,6 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const loading = document.getElementById('loading');
   const noResults = document.getElementById('no-results');
 
+  // Helper to escape HTML
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   function doSearch() {
     const query = input ? input.value.trim().toLowerCase() : '';
     

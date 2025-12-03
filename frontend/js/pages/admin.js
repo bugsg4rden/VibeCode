@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4>${escapeHtml(sub.title)}</h4>
             <p>by ${escapeHtml(sub.username) || 'Unknown'} • ${new Date(sub.created_at).toLocaleDateString()}</p>
             <p>Credits: ${escapeHtml(sub.credits) || 'N/A'}</p>
-            <p>Tags: ${sub.tags ? sub.tags.join(', ') : 'None'}</p>
+            <p>Tags: ${sub.tags ? sub.tags.map(t => escapeHtml(t)).join(', ') : 'None'}</p>
             <div class="review-card-actions" style="margin-top:10px;">
               <button class="btn btn-success btn-approve" data-id="${sub.id}">Approve</button>
               <button class="btn btn-danger btn-reject" data-id="${sub.id}">Reject</button>
