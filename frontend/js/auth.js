@@ -161,6 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedAccent = localStorage.getItem('accentColor');
   if (savedAccent) {
     document.documentElement.style.setProperty('--accent', savedAccent);
+    // Use black text for light colors
+    const isLightColor = savedAccent === '#FFFFFF' || savedAccent === '#F59E0B';
+    document.documentElement.style.setProperty('--accent-text', isLightColor ? '#000000' : '#FFFFFF');
   }
 
   // Update auth UI on all pages

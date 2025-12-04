@@ -12,6 +12,49 @@ document.addEventListener('DOMContentLoaded', () => {
     usernameEl.textContent = user.username || user.email;
   }
 
+  // Populate settings form
+  const settingsUsername = document.getElementById('settings-username');
+  const settingsEmail = document.getElementById('settings-email');
+  if (settingsUsername && user) settingsUsername.value = user.username || '';
+  if (settingsEmail && user) settingsEmail.value = user.email || '';
+
+  // Settings form submit
+  const settingsForm = document.getElementById('settings-form');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newUsername = settingsUsername.value.trim();
+      
+      if (!newUsername) {
+        alert('Username cannot be empty');
+        return;
+      }
+
+      // Demo mode - update user in localStorage
+      if (!CONFIG.API_URL) {
+        const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+        const userIndex = users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          users[userIndex].username = newUsername;
+          localStorage.setItem('demo_users', JSON.stringify(users));
+          
+          // Update current session
+          const session = JSON.parse(localStorage.getItem('demo_session'));
+          session.username = newUsername;
+          localStorage.setItem('demo_session', JSON.stringify(session));
+          
+          // Update display
+          if (usernameEl) usernameEl.textContent = newUsername;
+          alert('Settings saved!');
+        }
+        return;
+      }
+
+      // With backend - would call API
+      alert('Settings saved!');
+    });
+  }
+
   // Tab switching
   const tabs = document.querySelectorAll('.dash-tab');
   const panels = document.querySelectorAll('.tab-panel');
@@ -267,7 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Accent color picker
   const savedAccent = localStorage.getItem('accentColor') || '#0077ff';
-  document.documentElement.style.setProperty('--accent', savedAccent);
+  applyAccentColor(savedAccent);
+  
+  function applyAccentColor(color) {
+    document.documentElement.style.setProperty('--accent', color);
+    // Use black text for light colors (white, yellow, etc.)
+    const isLightColor = color === '#FFFFFF' || color === '#F59E0B';
+    document.documentElement.style.setProperty('--accent-text', isLightColor ? '#000000' : '#FFFFFF');
+  }
   
   const colorSwatches = document.querySelectorAll('.color-swatch');
   colorSwatches.forEach(swatch => {
@@ -278,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     swatch.addEventListener('click', () => {
       const color = swatch.dataset.color;
-      document.documentElement.style.setProperty('--accent', color);
+      applyAccentColor(color);
       localStorage.setItem('accentColor', color);
       
       // Update active state

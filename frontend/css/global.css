@@ -55,9 +55,9 @@ button{cursor:pointer}
 .auth-form p a{color:var(--accent)}
 
 /* Buttons */
-.btn-primary{padding:10px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-weight:500}
+.btn-primary{padding:10px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-text);font-weight:500;cursor:pointer}
 .btn-primary:hover{opacity:0.9}
-.btn-secondary{padding:10px 20px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary)}
+.btn-secondary{padding:10px 20px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer}
 .btn-secondary:hover{background:var(--surface)}
 .btn-danger{background:var(--error) !important;color:#fff}
 
