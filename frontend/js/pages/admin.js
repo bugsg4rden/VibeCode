@@ -224,11 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
       list.querySelectorAll('.btn-remove-image').forEach(btn => {
         btn.addEventListener('click', () => {
           const reportId = parseInt(btn.dataset.id);
-          const imageId = parseInt(btn.dataset.imageId);
+          const imageId = btn.dataset.imageId; // Keep as string to match submission IDs
           
           // Remove the image from submissions
           const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
-          const updatedSubmissions = submissions.filter(s => s.id !== imageId);
+          const updatedSubmissions = submissions.filter(s => String(s.id) !== String(imageId));
           localStorage.setItem('demo_submissions', JSON.stringify(updatedSubmissions));
           
           // Mark report as resolved
