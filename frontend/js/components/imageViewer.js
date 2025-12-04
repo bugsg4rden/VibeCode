@@ -203,8 +203,80 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
       }
-      // TODO: Open board selection modal
-      alert('Board selection coming soon!');
+
+      if (!currentImage) {
+        alert('No image to save');
+        return;
+      }
+
+      // Demo mode - show board selection
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const myBoards = boards.filter(b => b.user_id === user.id);
+
+        if (myBoards.length === 0) {
+          if (confirm('You have no boards yet. Would you like to go to your dashboard to create one?')) {
+            window.location.href = 'dashboard.html';
+          }
+          return;
+        }
+
+        // Build board selection prompt
+        let boardOptions = myBoards.map((b, i) => `${i + 1}. ${b.name}`).join('\n');
+        const choice = prompt(`Select a board to save this image to:\n\n${boardOptions}\n\nEnter the number:`);
+        
+        if (!choice) return;
+        
+        const index = parseInt(choice) - 1;
+        if (isNaN(index) || index < 0 || index >= myBoards.length) {
+          alert('Invalid selection');
+          return;
+        }
+
+        const selectedBoard = myBoards[index];
+        
+        // Check if image already in board
+        if (selectedBoard.images && selectedBoard.images.some(img => img.id === currentImage.id)) {
+          alert('This image is already in that board!');
+          return;
+        }
+
+        // Add image to board
+        const allBoards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const boardIndex = allBoards.findIndex(b => b.id === selectedBoard.id);
+        if (boardIndex !== -1) {
+          if (!allBoards[boardIndex].images) {
+            allBoards[boardIndex].images = [];
+          }
+          allBoards[boardIndex].images.push({
+            id: currentImage.id,
+            url: currentImage.url,
+            title: currentImage.title,
+            added_at: new Date().toISOString()
+          });
+          localStorage.setItem('demo_boards', JSON.stringify(allBoards));
+          alert(`Image saved to "${selectedBoard.name}"!`);
+        }
+        return;
+      }
+
+      // With backend API
+      try {
+        const data = await apiAuthGet('/boards');
+        if (!data.boards || data.boards.length === 0) {
+          alert('You have no boards. Create one in your dashboard first.');
+          return;
+        }
+        // For now, save to first board
+        await apiAuthPost(`/boards/${data.boards[0].id}/images`, {
+          image_url: currentImage.url,
+          title: currentImage.title
+        });
+        alert('Image saved to board!');
+      } catch (err) {
+        alert('Failed to save image to board');
+      }
     });
   }
 

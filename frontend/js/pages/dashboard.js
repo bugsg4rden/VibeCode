@@ -64,6 +64,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Demo mode - store boards in localStorage
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const newBoard = {
+          id: Date.now().toString(),
+          user_id: user.id,
+          name: name,
+          description: description,
+          is_public: is_public,
+          images: [],
+          created_at: new Date().toISOString()
+        };
+        boards.push(newBoard);
+        localStorage.setItem('demo_boards', JSON.stringify(boards));
+        modal.setAttribute('aria-hidden', 'true');
+        newBoardForm.reset();
+        loadBoards();
+        return;
+      }
+
       try {
         await apiAuthPost('/boards', { name, description, is_public });
         modal.setAttribute('aria-hidden', 'true');
@@ -79,6 +100,40 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadBoards() {
     const grid = document.getElementById('boards-grid');
     if (!grid) return;
+
+    // Demo mode - load from localStorage
+    if (!CONFIG.API_URL) {
+      const user = getCurrentUser();
+      const allBoards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+      const myBoards = allBoards.filter(b => b.user_id === user.id);
+      
+      grid.innerHTML = '';
+
+      if (myBoards.length === 0) {
+        grid.innerHTML = '<p class="empty-state">No boards yet. Create your first board!</p>';
+        return;
+      }
+
+      myBoards.forEach(board => {
+        const card = document.createElement('div');
+        card.className = 'board-card';
+        const coverImage = board.images && board.images.length > 0 
+          ? board.images[0].url 
+          : 'frontend/assets/images/placeholder1.jpg';
+        card.innerHTML = `
+          <img src="${escapeHtml(coverImage)}" alt="${escapeHtml(board.name)}">
+          <div class="board-card-body">
+            <h4>${escapeHtml(board.name)}</h4>
+            <span>${board.images ? board.images.length : 0} images</span>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          window.location.href = `board.html?id=${board.id}`;
+        });
+        grid.appendChild(card);
+      });
+      return;
+    }
 
     try {
       const data = await apiAuthGet('/boards');
