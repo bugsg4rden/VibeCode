@@ -284,15 +284,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Download image
   if (btnDownload) {
-    btnDownload.addEventListener('click', () => {
-      if (currentImage && currentImage.url) {
+    btnDownload.addEventListener('click', async () => {
+      if (!currentImage || !currentImage.url) return;
+      
+      const filename = (currentImage.title || 'reference').replace(/[^a-z0-9]/gi, '_') + '.jpg';
+      
+      try {
+        // Try to fetch and download as blob (works for most images)
+        const response = await fetch(currentImage.url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
         const a = document.createElement('a');
-        a.href = currentImage.url;
-        a.download = (currentImage.title || 'reference') + '.jpg';
-        a.target = '_blank';
+        a.href = blobUrl;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        // Fallback: open in new tab if fetch fails (CORS issues)
+        // User can right-click and save from there
+        alert('Unable to download directly due to the image source restrictions. The image will open in a new tab where you can right-click and save it.');
+        window.open(currentImage.url, '_blank');
       }
     });
   }
