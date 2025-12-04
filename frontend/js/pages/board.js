@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
           card.innerHTML = `<img src="${img.url}" alt="${img.title || ''}">`;
           card.addEventListener('click', () => {
             localStorage.setItem('viewerImage', JSON.stringify(img));
+            localStorage.setItem('viewerReturnUrl', window.location.href);
             window.location.href = 'viewer.html';
           });
           grid.appendChild(card);

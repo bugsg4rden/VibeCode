@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       card.addEventListener('click', () => {
         localStorage.setItem('viewerImage', JSON.stringify(item));
+        localStorage.setItem('viewerReturnUrl', 'search.html');
         window.location.href = 'viewer.html';
       });
       

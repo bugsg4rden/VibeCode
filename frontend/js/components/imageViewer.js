@@ -65,8 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     localStorage.removeItem('viewerImage');
-    // Navigate back to search page
-    window.location.href = 'search.html';
+    // Navigate back to the page user came from
+    const returnUrl = localStorage.getItem('viewerReturnUrl') || 'search.html';
+    localStorage.removeItem('viewerReturnUrl');
+    window.location.href = returnUrl;
   }
 
   // Close button
