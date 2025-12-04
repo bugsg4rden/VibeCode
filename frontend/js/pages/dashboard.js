@@ -318,9 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function applyAccentColor(color) {
     document.documentElement.style.setProperty('--accent', color);
-    // Use black text for light colors (white, yellow, etc.)
-    const isLightColor = color === '#FFFFFF' || color === '#F59E0B';
-    document.documentElement.style.setProperty('--accent-text', isLightColor ? '#000000' : '#FFFFFF');
+    // Use black text only for white accent
+    const isWhite = color === '#FFFFFF';
+    document.documentElement.style.setProperty('--accent-text', isWhite ? '#000000' : '#FFFFFF');
   }
   
   const colorSwatches = document.querySelectorAll('.color-swatch');
