@@ -206,18 +206,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'review-card';
         card.innerHTML = `
+          <img src="${escapeHtml(rep.image_url)}" alt="Reported image">
           <div class="review-card-body">
-            <h4>Report: ${escapeHtml(rep.reason)}</h4>
-            <p>${escapeHtml(rep.description) || ''}</p>
-            <p>Reported ${new Date(rep.created_at).toLocaleDateString()}</p>
+            <h4>${escapeHtml(rep.image_title || 'Untitled')}</h4>
+            <p><strong>Reason:</strong> ${escapeHtml(rep.reason)}</p>
+            <p>Reported ${new Date(rep.reported_at).toLocaleDateString()}</p>
             <div class="review-card-actions">
-              <button class="btn btn-success btn-resolve" data-id="${rep.id}">Resolve</button>
-              <button class="btn btn-secondary btn-dismiss" data-id="${rep.id}">Dismiss</button>
+              <button class="btn btn-danger btn-remove-image" data-id="${rep.id}" data-image-id="${rep.image_id}">Remove Image</button>
+              <button class="btn btn-secondary btn-dismiss" data-id="${rep.id}">Dismiss Report</button>
             </div>
           </div>
         `;
         list.appendChild(card);
       });
+
+      // Attach event handlers for Demo Mode
+      list.querySelectorAll('.btn-remove-image').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reportId = parseInt(btn.dataset.id);
+          const imageId = parseInt(btn.dataset.imageId);
+          
+          // Remove the image from submissions
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const updatedSubmissions = submissions.filter(s => s.id !== imageId);
+          localStorage.setItem('demo_submissions', JSON.stringify(updatedSubmissions));
+          
+          // Mark report as resolved
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          const updatedReports = reports.map(r => 
+            r.id === reportId ? { ...r, status: 'resolved' } : r
+          );
+          localStorage.setItem('demo_reports', JSON.stringify(updatedReports));
+          
+          loadReports();
+          loadStats();
+        });
+      });
+
+      list.querySelectorAll('.btn-dismiss').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reportId = parseInt(btn.dataset.id);
+          
+          // Mark report as dismissed
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          const updatedReports = reports.map(r => 
+            r.id === reportId ? { ...r, status: 'dismissed' } : r
+          );
+          localStorage.setItem('demo_reports', JSON.stringify(updatedReports));
+          
+          loadReports();
+          loadStats();
+        });
+      });
+
       return;
     }
 

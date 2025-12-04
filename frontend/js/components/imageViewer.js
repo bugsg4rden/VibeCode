@@ -231,6 +231,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const reason = prompt('Why are you reporting this image? (e.g., inappropriate content, broken link, copyright issue)');
       if (!reason) return;
 
+      // Demo mode - store reports in localStorage
+      if (!CONFIG.API_URL) {
+        const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+        const report = {
+          id: Date.now(),
+          image_id: currentImage.id,
+          image_url: currentImage.url,
+          image_title: currentImage.title || 'Untitled',
+          reason: reason,
+          reported_by: getCurrentUser()?.id || 'anonymous',
+          reported_at: new Date().toISOString(),
+          status: 'pending'
+        };
+        reports.push(report);
+        localStorage.setItem('demo_reports', JSON.stringify(reports));
+        alert('Thank you for your report. We will review it shortly.');
+        return;
+      }
+
       try {
         await apiPost('/reports', {
           image_url: currentImage.url,
