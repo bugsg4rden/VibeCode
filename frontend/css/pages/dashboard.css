@@ -33,6 +33,10 @@
 .color-swatch:hover{transform:scale(1.1)}
 .color-swatch.active{border-color:var(--text-primary);box-shadow:0 0 0 2px var(--bg-primary)}
 
+/* Settings descriptions */
+.settings-description{color:var(--text-secondary);font-size:14px;margin:0 0 16px;max-width:500px}
+.settings-hint{color:var(--muted);font-size:12px;margin:4px 0 16px}
+
 /* Danger zone */
 .danger-zone{padding:16px;border:1px solid var(--error);border-radius:var(--radius-md);background:rgba(239,68,68,0.1)}
 .danger-zone p{margin:0 0 12px;color:var(--text-secondary);font-size:14px}

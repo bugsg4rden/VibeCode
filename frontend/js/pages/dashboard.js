@@ -26,32 +26,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const newUsername = settingsUsername.value.trim();
       
       if (!newUsername) {
-        alert('Username cannot be empty');
+        alert('Display name cannot be empty');
         return;
       }
 
       // Demo mode - update user in localStorage
       if (!CONFIG.API_URL) {
+        const currentUser = getCurrentUser(); // Get fresh user data
         const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
-        const userIndex = users.findIndex(u => u.id === user.id);
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        
         if (userIndex !== -1) {
           users[userIndex].username = newUsername;
           localStorage.setItem('demo_users', JSON.stringify(users));
           
           // Update current session
-          const session = JSON.parse(localStorage.getItem('demo_session'));
+          const session = JSON.parse(localStorage.getItem('demo_session') || '{}');
           session.username = newUsername;
           localStorage.setItem('demo_session', JSON.stringify(session));
           
           // Update display
           if (usernameEl) usernameEl.textContent = newUsername;
-          alert('Settings saved!');
+          alert('Profile saved successfully!');
+        } else {
+          alert('Error: Could not find user. Please try logging in again.');
         }
         return;
       }
 
       // With backend - would call API
-      alert('Settings saved!');
+      alert('Profile saved!');
     });
   }
 
