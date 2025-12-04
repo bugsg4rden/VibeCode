@@ -157,6 +157,12 @@ function updateAuthUI() {
 
 // Bind login form
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply saved accent color on all pages
+  const savedAccent = localStorage.getItem('accentColor');
+  if (savedAccent) {
+    document.documentElement.style.setProperty('--accent', savedAccent);
+  }
+
   // Update auth UI on all pages
   updateAuthUI();
 

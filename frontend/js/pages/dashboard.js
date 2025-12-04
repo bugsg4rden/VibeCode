@@ -265,8 +265,74 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Accent color picker
+  const savedAccent = localStorage.getItem('accentColor') || '#0077ff';
+  document.documentElement.style.setProperty('--accent', savedAccent);
+  
+  const colorSwatches = document.querySelectorAll('.color-swatch');
+  colorSwatches.forEach(swatch => {
+    // Mark currently active color
+    if (swatch.dataset.color === savedAccent) {
+      swatch.classList.add('active');
+    }
+    
+    swatch.addEventListener('click', () => {
+      const color = swatch.dataset.color;
+      document.documentElement.style.setProperty('--accent', color);
+      localStorage.setItem('accentColor', color);
+      
+      // Update active state
+      colorSwatches.forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+    });
+  });
+
+  // Delete account
+  const deleteAccountBtn = document.getElementById('delete-account-btn');
+  if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener('click', () => {
+      const confirmText = prompt('This will permanently delete your account and all your data.\n\nType "DELETE" to confirm:');
+      if (confirmText !== 'DELETE') {
+        if (confirmText !== null) {
+          alert('Account deletion cancelled. You must type DELETE exactly.');
+        }
+        return;
+      }
+
+      // Demo mode - remove user data
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        if (!user) return;
+
+        // Remove user from users list
+        const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+        const filteredUsers = users.filter(u => u.id !== user.id);
+        localStorage.setItem('demo_users', JSON.stringify(filteredUsers));
+
+        // Remove user's boards
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const filteredBoards = boards.filter(b => b.user_id !== user.id);
+        localStorage.setItem('demo_boards', JSON.stringify(filteredBoards));
+
+        // Remove user's submissions
+        const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+        const filteredSubmissions = submissions.filter(s => s.user_id !== user.id);
+        localStorage.setItem('demo_submissions', JSON.stringify(filteredSubmissions));
+
+        // Log out and redirect
+        logout();
+        alert('Your account has been deleted.');
+        return;
+      }
+
+      // With backend - would call API
+      alert('Account deletion requires backend support.');
+    });
+  }
+
   // Helper function to escape HTML
   function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;

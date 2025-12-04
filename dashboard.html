@@ -75,8 +75,33 @@
           <label>Email</label>
           <input type="email" id="settings-email" disabled>
           <br>
-          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
+
+        <hr style="margin: 2rem 0; border-color: var(--border);">
+
+        <h2>Appearance</h2>
+        <div class="settings-form">
+          <label>Accent Color</label>
+          <div class="accent-color-options" id="accent-colors">
+            <button type="button" class="color-swatch" data-color="#0077ff" style="background:#0077ff;" title="Blue"></button>
+            <button type="button" class="color-swatch" data-color="#8B5CF6" style="background:#8B5CF6;" title="Purple"></button>
+            <button type="button" class="color-swatch" data-color="#EC4899" style="background:#EC4899;" title="Pink"></button>
+            <button type="button" class="color-swatch" data-color="#EF4444" style="background:#EF4444;" title="Red"></button>
+            <button type="button" class="color-swatch" data-color="#F59E0B" style="background:#F59E0B;" title="Orange"></button>
+            <button type="button" class="color-swatch" data-color="#22C55E" style="background:#22C55E;" title="Green"></button>
+            <button type="button" class="color-swatch" data-color="#14B8A6" style="background:#14B8A6;" title="Teal"></button>
+            <button type="button" class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF;" title="White"></button>
+          </div>
+        </div>
+
+        <hr style="margin: 2rem 0; border-color: var(--border);">
+
+        <h2>Danger Zone</h2>
+        <div class="danger-zone">
+          <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+          <button type="button" id="delete-account-btn" class="btn btn-danger">Delete Account</button>
+        </div>
       </div>
     </section>
   </main>
