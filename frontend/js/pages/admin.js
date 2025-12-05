@@ -51,6 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statSubmissions) statSubmissions.textContent = submissions.filter(s => s.status === 'approved').length;
       if (statPending) statPending.textContent = submissions.filter(s => s.status === 'pending').length;
       if (statReports) statReports.textContent = reports.filter(r => r.status === 'pending').length;
+      
+      // Load recent activity
+      loadRecentActivity(submissions, users, reports);
       return;
     }
 
@@ -63,6 +66,105 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  // Load recent activity
+  function loadRecentActivity(submissions, users, reports) {
+    const activityList = document.getElementById('activity-list');
+    if (!activityList) return;
+
+    // Collect all activities with timestamps
+    const activities = [];
+
+    // Add submissions
+    submissions.forEach(sub => {
+      const user = users.find(u => u.id === sub.user_id);
+      const username = user ? user.username : 'Unknown user';
+      
+      if (sub.status === 'pending') {
+        activities.push({
+          time: new Date(sub.created_at),
+          icon: '📤',
+          text: `<strong>${escapeHtml(username)}</strong> submitted "${escapeHtml(sub.title)}"`,
+          type: 'submission'
+        });
+      } else if (sub.status === 'approved') {
+        activities.push({
+          time: new Date(sub.approved_at || sub.created_at),
+          icon: '✅',
+          text: `"${escapeHtml(sub.title)}" was approved`,
+          type: 'approved'
+        });
+      } else if (sub.status === 'rejected') {
+        activities.push({
+          time: new Date(sub.rejected_at || sub.created_at),
+          icon: '❌',
+          text: `"${escapeHtml(sub.title)}" was rejected`,
+          type: 'rejected'
+        });
+      }
+    });
+
+    // Add reports
+    reports.forEach(rep => {
+      activities.push({
+        time: new Date(rep.reported_at),
+        icon: '🚩',
+        text: `Image "${escapeHtml(rep.image_title || 'Untitled')}" was reported: ${escapeHtml(rep.reason)}`,
+        type: 'report'
+      });
+    });
+
+    // Add user registrations
+    users.forEach(user => {
+      if (user.created_at) {
+        activities.push({
+          time: new Date(user.created_at),
+          icon: '👤',
+          text: `<strong>${escapeHtml(user.username || user.email)}</strong> joined`,
+          type: 'user'
+        });
+      }
+    });
+
+    // Sort by time (newest first) and take top 10
+    activities.sort((a, b) => b.time - a.time);
+    const recentActivities = activities.slice(0, 10);
+
+    // Render
+    activityList.innerHTML = '';
+    
+    if (recentActivities.length === 0) {
+      activityList.innerHTML = '<li class="empty-activity">No recent activity</li>';
+      return;
+    }
+
+    recentActivities.forEach(activity => {
+      const li = document.createElement('li');
+      li.className = 'activity-item';
+      const timeAgo = getTimeAgo(activity.time);
+      li.innerHTML = `
+        <span class="activity-icon">${activity.icon}</span>
+        <span class="activity-text">${activity.text}</span>
+        <span class="activity-time">${timeAgo}</span>
+      `;
+      activityList.appendChild(li);
+    });
+  }
+
+  // Helper to format time ago
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
   }
 
   // Load pending submissions
