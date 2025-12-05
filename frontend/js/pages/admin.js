@@ -433,10 +433,22 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><span class="badge badge-${escapeHtml(sub.status) === 'approved' ? 'success' : escapeHtml(sub.status) === 'rejected' ? 'danger' : 'warning'}">${escapeHtml(sub.status)}</span></td>
           <td>${new Date(escapeHtml(sub.created_at)).toLocaleDateString()}</td>
           <td>
+            <button class="btn btn-sm btn-edit btn-edit-sub" data-id="${sub.id}">Edit</button>
             <button class="btn btn-sm btn-danger btn-delete" data-id="${sub.id}">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
+      });
+
+      // Edit button handlers
+      tbody.querySelectorAll('.btn-edit-sub').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const sub = submissions.find(s => s.id === btn.dataset.id);
+          if (sub) {
+            openEditModal(sub);
+          }
+        });
       });
 
       tbody.querySelectorAll('.btn-delete').forEach(btn => {
@@ -579,6 +591,94 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  // Edit submission modal
+  const editModal = document.getElementById('edit-submission-modal');
+  const editForm = document.getElementById('edit-submission-form');
+  const cancelEditBtn = document.getElementById('cancel-edit-sub');
+
+  function openEditModal(submission) {
+    if (!editModal) return;
+    
+    // Populate form fields
+    document.getElementById('edit-sub-id').value = submission.id;
+    document.getElementById('edit-sub-title').value = submission.title || '';
+    document.getElementById('edit-sub-credits').value = submission.credits || '';
+    
+    // Clear all tag checkboxes first
+    editModal.querySelectorAll('input[name="tags"]').forEach(cb => {
+      cb.checked = false;
+    });
+    
+    // Check the tags that the submission has
+    if (submission.tags && Array.isArray(submission.tags)) {
+      submission.tags.forEach(tag => {
+        const checkbox = editModal.querySelector(`input[name="tags"][value="${tag}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+    
+    editModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeEditModal() {
+    if (editModal) editModal.setAttribute('aria-hidden', 'true');
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener('click', closeEditModal);
+  }
+
+  if (editModal) {
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal || e.target.classList.contains('modal-backdrop')) {
+        closeEditModal();
+      }
+    });
+  }
+
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const subId = document.getElementById('edit-sub-id').value;
+      const newTitle = document.getElementById('edit-sub-title').value.trim();
+      const newCredits = document.getElementById('edit-sub-credits').value.trim();
+      
+      // Collect selected tags
+      const selectedTags = [];
+      editModal.querySelectorAll('input[name="tags"]:checked').forEach(cb => {
+        selectedTags.push(cb.value);
+      });
+      
+      if (!newTitle) {
+        alert('Title cannot be empty');
+        return;
+      }
+      
+      // Demo mode - update in localStorage
+      if (!CONFIG.API_URL) {
+        const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+        const index = submissions.findIndex(s => s.id === subId);
+        
+        if (index !== -1) {
+          submissions[index].title = newTitle;
+          submissions[index].credits = newCredits;
+          submissions[index].tags = selectedTags;
+          localStorage.setItem('demo_submissions', JSON.stringify(submissions));
+          
+          closeEditModal();
+          loadAllSubmissions();
+          loadPending();
+          alert('Submission updated successfully!');
+        }
+        return;
+      }
+      
+      // With backend - would call API
+      alert('Backend edit not implemented');
+    });
   }
 
   // Initial load
