@@ -6,9 +6,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const noBoards = document.getElementById('no-boards');
   const searchInput = document.getElementById('board-search');
   const searchBtn = document.getElementById('search-btn');
+  const pagination = document.getElementById('pagination');
+  const prevBtn = document.getElementById('prev-page');
+  const nextBtn = document.getElementById('next-page');
+  const pageNumbers = document.getElementById('page-numbers');
 
-  function loadPublicBoards(searchQuery = '') {
+  const BOARDS_PER_PAGE = 6;
+  let currentPage = 1;
+  let allFilteredBoards = [];
+
+  function loadPublicBoards(searchQuery = '', page = 1) {
     if (!boardsGrid) return;
+
+    currentPage = page;
 
     // Demo mode - load from localStorage
     if (!CONFIG.API_URL) {
@@ -31,16 +41,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      allFilteredBoards = publicBoards;
+      const totalPages = Math.ceil(publicBoards.length / BOARDS_PER_PAGE);
+      
+      // Ensure current page is valid
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      }
+      if (currentPage < 1) currentPage = 1;
+
+      // Get boards for current page
+      const startIndex = (currentPage - 1) * BOARDS_PER_PAGE;
+      const endIndex = startIndex + BOARDS_PER_PAGE;
+      const boardsToShow = publicBoards.slice(startIndex, endIndex);
+
       boardsGrid.innerHTML = '';
 
       if (publicBoards.length === 0) {
         if (noBoards) noBoards.style.display = 'block';
+        if (pagination) pagination.style.display = 'none';
         return;
       }
 
       if (noBoards) noBoards.style.display = 'none';
 
-      publicBoards.forEach(board => {
+      boardsToShow.forEach(board => {
         const user = users.find(u => u.id === board.user_id);
         const username = user ? (user.username || user.email) : 'Unknown';
         const imageCount = board.images ? board.images.length : 0;
@@ -101,9 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
           const filtered = boards.filter(b => b.id !== boardId);
           localStorage.setItem('demo_boards', JSON.stringify(filtered));
           
-          loadPublicBoards(searchInput ? searchInput.value.trim() : '');
+          loadPublicBoards(searchInput ? searchInput.value.trim() : '', currentPage);
         });
       });
+
+      // Render pagination
+      renderPagination(totalPages);
 
       return;
     }
@@ -112,17 +140,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... would implement API calls here
   }
 
+  function renderPagination(totalPages) {
+    if (!pagination || !pageNumbers) return;
+
+    if (totalPages <= 1) {
+      pagination.style.display = 'none';
+      return;
+    }
+
+    pagination.style.display = 'flex';
+    pageNumbers.innerHTML = '';
+
+    // Update prev/next buttons
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+    // Render page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'page-num' + (i === currentPage ? ' active' : '');
+      btn.textContent = i;
+      btn.addEventListener('click', () => {
+        loadPublicBoards(searchInput ? searchInput.value.trim() : '', i);
+      });
+      pageNumbers.appendChild(btn);
+    }
+  }
+
+  // Prev/Next button handlers
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        loadPublicBoards(searchInput ? searchInput.value.trim() : '', currentPage - 1);
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allFilteredBoards.length / BOARDS_PER_PAGE);
+      if (currentPage < totalPages) {
+        loadPublicBoards(searchInput ? searchInput.value.trim() : '', currentPage + 1);
+      }
+    });
+  }
+
   // Search functionality
   if (searchBtn) {
     searchBtn.addEventListener('click', () => {
-      loadPublicBoards(searchInput ? searchInput.value.trim() : '');
+      loadPublicBoards(searchInput ? searchInput.value.trim() : '', 1);
     });
   }
 
   if (searchInput) {
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        loadPublicBoards(searchInput.value.trim());
+        loadPublicBoards(searchInput.value.trim(), 1);
       }
     });
   }
