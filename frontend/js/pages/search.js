@@ -18,8 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultsGrid = document.getElementById('results-grid');
   const loading = document.getElementById('loading');
   const noResults = document.getElementById('no-results');
+  const pagination = document.getElementById('search-pagination');
+  const prevBtn = document.getElementById('search-prev');
+  const nextBtn = document.getElementById('search-next');
+  const pageNumbers = document.getElementById('search-page-numbers');
 
-  function doSearch() {
+  const IMAGES_PER_PAGE = 12;
+  let currentPage = 1;
+  let allResults = [];
+
+  function doSearch(page = 1) {
+    currentPage = page;
     const query = input ? input.value.trim().toLowerCase() : '';
     
     if (loading) loading.style.display = 'block';
@@ -91,10 +100,24 @@ document.addEventListener('DOMContentLoaded', () => {
             : 'No approved submissions yet. <a href="submit.html">Be the first to submit!</a>';
           noResults.style.display = 'block';
         }
+        if (pagination) pagination.style.display = 'none';
         return;
       }
 
-      renderResults(results);
+      allResults = results;
+      const totalPages = Math.ceil(results.length / IMAGES_PER_PAGE);
+      
+      // Ensure current page is valid
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      // Get results for current page
+      const startIndex = (currentPage - 1) * IMAGES_PER_PAGE;
+      const endIndex = startIndex + IMAGES_PER_PAGE;
+      const pageResults = results.slice(startIndex, endIndex);
+
+      renderResults(pageResults);
+      renderPagination(totalPages);
       return;
     }
 
@@ -132,6 +155,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function renderPagination(totalPages) {
+    if (!pagination || !pageNumbers) return;
+
+    if (totalPages <= 1) {
+      pagination.style.display = 'none';
+      return;
+    }
+
+    pagination.style.display = 'flex';
+
+    // Update prev/next buttons
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+    // Render page numbers
+    pageNumbers.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'search-page-num' + (i === currentPage ? ' active' : '');
+      btn.textContent = i;
+      btn.addEventListener('click', () => {
+        doSearch(i);
+        // Scroll to top of results
+        resultsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      pageNumbers.appendChild(btn);
+    }
+  }
+
+  // Prev/Next button handlers
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        doSearch(currentPage - 1);
+        resultsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(allResults.length / IMAGES_PER_PAGE);
+      if (currentPage < totalPages) {
+        doSearch(currentPage + 1);
+        resultsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
   // Search button
   const searchBtn = document.getElementById('search-btn');
   if (searchBtn) {
@@ -140,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set('q', term);
       window.history.pushState({}, '', newUrl);
-      doSearch();
+      doSearch(1);
     });
   }
 
@@ -157,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply filters
   const applyBtn = document.getElementById('apply-filters');
   if (applyBtn) {
-    applyBtn.addEventListener('click', doSearch);
+    applyBtn.addEventListener('click', () => doSearch(1));
   }
 
   // Clear filters
@@ -168,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         select.selectedIndex = 0;
       });
       if (input) input.value = '';
-      doSearch();
+      doSearch(1);
     });
   }
 
