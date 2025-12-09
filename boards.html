@@ -1,24 +1,21 @@
-<!--HELP IM IN SO MUCH PAIN AND AGONY </3-->
-<!--supabase.com + convex.dev-->
-
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>RefSearch — Find art references</title>
+  <title>RefSearch — Public Boards</title>
   <link rel="stylesheet" href="frontend/css/variables.css">
   <link rel="stylesheet" href="frontend/css/global.css">
+  <link rel="stylesheet" href="frontend/css/pages/boards.css">
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">RefSearch</a>
       <nav class="main-nav">
-        <a href="index.html" class="active">Home</a>
+        <a href="index.html">Home</a>
         <a href="search.html">Browse</a>
-        <a href="boards.html">Boards</a>
+        <a href="boards.html" class="active">Boards</a>
         <a href="submit.html">Submit</a>
       </nav>
       <div class="auth-links" id="auth-links">
@@ -31,28 +28,22 @@
     </div>
   </header>
 
-  <main class="container hero">
-    <h1>RefSearch</h1>
-    <p class="hero-subtitle">Find the perfect art reference for your next masterpiece</p>
-    
-    <form id="search-form" class="search-form">
-      <input id="search-input" type="search" placeholder="Type keywords like 'running male 3/4 view'" aria-label="Search">
-      <button type="submit">Search</button>
-    </form>
+  <main class="container boards-page">
+    <div class="page-header">
+      <h1>Public Boards</h1>
+      <p>Discover curated collections of references from other artists</p>
+    </div>
 
-    <section class="quick-links">
-      <button data-q="poses">Poses</button>
-      <button data-q="expressions">Expressions</button>
-      <button data-q="portrait">Portraits</button>
-      <button data-q="action">Action</button>
-    </section>
+    <div class="search-bar">
+      <input type="search" id="board-search" placeholder="Search boards by name or creator...">
+      <button id="search-btn">Search</button>
+    </div>
 
-    <section class="home-section">
-      <h2>Recent References</h2>
-      <div class="masonry-grid" id="trending-grid">
-        <!-- Trending images will be injected here -->
-      </div>
-    </section>
+    <div id="boards-grid" class="boards-grid">
+      <!-- boards will be loaded here -->
+    </div>
+
+    <p id="no-boards" class="empty-msg" style="display:none;">No public boards found.</p>
   </main>
 
   <footer class="site-footer">
@@ -64,6 +55,6 @@
   <script src="frontend/config.js"></script>
   <script src="frontend/js/api.js"></script>
   <script src="frontend/js/auth.js"></script>
-  <script src="frontend/js/pages/home.js"></script>
+  <script src="frontend/js/pages/boards.js"></script>
 </body>
 </html>
