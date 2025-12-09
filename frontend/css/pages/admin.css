@@ -18,6 +18,14 @@
 .activity-text strong{color:var(--accent)}
 .activity-time{color:var(--text-secondary);font-size:12px;white-space:nowrap}
 .empty-activity{color:var(--text-secondary);padding:16px 0}
+.activity-pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:16px;padding:12px 0}
+.activity-page-arrow{background:var(--surface);border:1px solid var(--border);color:var(--text-primary);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;transition:background 0.2s,border-color 0.2s}
+.activity-page-arrow:hover:not(:disabled){background:var(--surface-hover);border-color:var(--accent)}
+.activity-page-arrow:disabled{opacity:0.5;cursor:not-allowed}
+.activity-page-numbers{display:flex;gap:6px}
+.activity-page-num{background:var(--surface);border:1px solid var(--border);color:var(--text-primary);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background 0.2s,border-color 0.2s}
+.activity-page-num:hover{background:var(--surface-hover);border-color:var(--accent)}
+.activity-page-num.active{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
 .review-list{display:flex;flex-direction:column;gap:16px}
 .review-card{display:flex;gap:16px;background:var(--surface);padding:16px;border-radius:var(--radius-md)}
 .review-card img{width:120px;height:120px;object-fit:cover;border-radius:var(--radius-sm)}

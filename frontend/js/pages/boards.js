@@ -123,6 +123,19 @@ document.addEventListener('DOMContentLoaded', () => {
           
           const boardId = btn.dataset.id;
           const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+          const boardToDelete = boards.find(b => b.id === boardId);
+          
+          // Track deletion in activity log if it was public
+          if (boardToDelete && boardToDelete.is_public) {
+            const boardActivity = JSON.parse(localStorage.getItem('demo_board_activity') || '[]');
+            boardActivity.push({
+              action: 'deleted',
+              board_name: boardToDelete.name,
+              time: new Date().toISOString()
+            });
+            localStorage.setItem('demo_board_activity', JSON.stringify(boardActivity));
+          }
+          
           const filtered = boards.filter(b => b.id !== boardId);
           localStorage.setItem('demo_boards', JSON.stringify(filtered));
           

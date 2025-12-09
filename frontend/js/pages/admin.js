@@ -68,10 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Activity pagination state
+  const ACTIVITIES_PER_PAGE = 10;
+  let activityCurrentPage = 1;
+  let allActivities = [];
+
   // Load recent activity
-  function loadRecentActivity(submissions, users, reports) {
+  function loadRecentActivity(submissions, users, reports, page = 1) {
     const activityList = document.getElementById('activity-list');
+    const activityPagination = document.getElementById('activity-pagination');
     if (!activityList) return;
+
+    activityCurrentPage = page;
 
     // Collect all activities with timestamps
     const activities = [];
@@ -127,19 +135,63 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Sort by time (newest first) and take top 10
+    // Add public board creations and deletions
+    const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+    const boardActivity = JSON.parse(localStorage.getItem('demo_board_activity') || '[]');
+    
+    // Add existing public boards (created)
+    boards.forEach(board => {
+      if (board.is_public && board.created_at) {
+        const user = users.find(u => u.id === board.user_id);
+        const username = user ? user.username : 'Unknown user';
+        activities.push({
+          time: new Date(board.created_at),
+          icon: '📁',
+          text: `<strong>${escapeHtml(username)}</strong> created public board "${escapeHtml(board.name)}"`,
+          type: 'board-created'
+        });
+      }
+    });
+
+    // Add board deletion activities
+    boardActivity.forEach(activity => {
+      if (activity.action === 'deleted') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '🗑️',
+          text: `Public board "${escapeHtml(activity.board_name)}" was deleted`,
+          type: 'board-deleted'
+        });
+      }
+    });
+
+    // Sort by time (newest first)
     activities.sort((a, b) => b.time - a.time);
-    const recentActivities = activities.slice(0, 10);
+    allActivities = activities;
+
+    const totalPages = Math.ceil(activities.length / ACTIVITIES_PER_PAGE);
+    
+    // Ensure current page is valid
+    if (activityCurrentPage > totalPages && totalPages > 0) {
+      activityCurrentPage = totalPages;
+    }
+    if (activityCurrentPage < 1) activityCurrentPage = 1;
+
+    // Get activities for current page
+    const startIndex = (activityCurrentPage - 1) * ACTIVITIES_PER_PAGE;
+    const endIndex = startIndex + ACTIVITIES_PER_PAGE;
+    const activitiesToShow = activities.slice(startIndex, endIndex);
 
     // Render
     activityList.innerHTML = '';
     
-    if (recentActivities.length === 0) {
+    if (activities.length === 0) {
       activityList.innerHTML = '<li class="empty-activity">No recent activity</li>';
+      if (activityPagination) activityPagination.style.display = 'none';
       return;
     }
 
-    recentActivities.forEach(activity => {
+    activitiesToShow.forEach(activity => {
       const li = document.createElement('li');
       li.className = 'activity-item';
       const timeAgo = getTimeAgo(activity.time);
@@ -150,7 +202,79 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       activityList.appendChild(li);
     });
+
+    // Render pagination
+    renderActivityPagination(totalPages);
   }
+
+  function renderActivityPagination(totalPages) {
+    const activityPagination = document.getElementById('activity-pagination');
+    if (!activityPagination) return;
+
+    if (totalPages <= 1) {
+      activityPagination.style.display = 'none';
+      return;
+    }
+
+    activityPagination.style.display = 'flex';
+    
+    const prevBtn = activityPagination.querySelector('.activity-prev');
+    const nextBtn = activityPagination.querySelector('.activity-next');
+    const pageNumbers = activityPagination.querySelector('.activity-page-numbers');
+
+    if (prevBtn) prevBtn.disabled = activityCurrentPage === 1;
+    if (nextBtn) nextBtn.disabled = activityCurrentPage === totalPages;
+
+    if (pageNumbers) {
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'activity-page-num' + (i === activityCurrentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, i);
+        });
+        pageNumbers.appendChild(btn);
+      }
+    }
+  }
+
+  // Setup activity pagination event listeners
+  function setupActivityPagination() {
+    const activityPagination = document.getElementById('activity-pagination');
+    if (!activityPagination) return;
+
+    const prevBtn = activityPagination.querySelector('.activity-prev');
+    const nextBtn = activityPagination.querySelector('.activity-next');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (activityCurrentPage > 1) {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, activityCurrentPage - 1);
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(allActivities.length / ACTIVITIES_PER_PAGE);
+        if (activityCurrentPage < totalPages) {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, activityCurrentPage + 1);
+        }
+      });
+    }
+  }
+
+  setupActivityPagination();
 
   // Helper to format time ago
   function getTimeAgo(date) {
