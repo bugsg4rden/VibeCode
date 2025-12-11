@@ -23,7 +23,8 @@ async function register(email, password, username) {
       email, 
       password, 
       username, 
-      role: users.length === 0 ? 'admin' : 'user' // First user is admin
+      role: users.length === 0 ? 'admin' : 'user', // First user is admin
+      created_at: new Date().toISOString()
     });
     localStorage.setItem('demo_users', JSON.stringify(users));
     return { message: 'Registration successful' };
