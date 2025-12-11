@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Check if user is logged in
+  if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
+    window.location.href = 'login.html?redirect=boards.html';
+    return;
+  }
+
   // Update auth UI
   updateAuthUI();
 
