@@ -636,12 +636,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       users.forEach(u => {
         const tr = document.createElement('tr');
+        const joinDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : '-';
         tr.innerHTML = `
           <td>${escapeHtml(u.username)}</td>
           <td>${escapeHtml(u.email)}</td>
           <td>${u.role}</td>
-          <td>${u.is_banned ? 'Banned' : 'Active'}</td>
-          <td>-</td>
+          <td>${u.is_banned ? 'Banned' : 'Stable'}</td>
+          <td>${joinDate}</td>
           <td>
             ${u.is_banned 
               ? `<button class="btn btn-sm btn-success btn-unban" data-id="${u.id}">Unban</button>`
@@ -683,12 +684,13 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = '';
       data.users.forEach(user => {
         const tr = document.createElement('tr');
+        const joinDate = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
         tr.innerHTML = `
           <td>${user.username}</td>
           <td>${user.email}</td>
           <td>${user.role}</td>
-          <td>${user.is_banned ? 'Banned' : 'Active'}</td>
-          <td>${new Date(user.created_at).toLocaleDateString()}</td>
+          <td>${user.is_banned ? 'Banned' : 'OK'}</td>
+          <td>${joinDate}</td>
           <td>
             ${user.is_banned 
               ? `<button class="btn-unban" data-id="${user.id}">Unban</button>`
