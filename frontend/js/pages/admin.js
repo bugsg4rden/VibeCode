@@ -641,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${escapeHtml(u.username)}</td>
           <td>${escapeHtml(u.email)}</td>
           <td>${u.role}</td>
-          <td>${u.is_banned ? 'Banned' : 'Stable'}</td>
+          <td>${u.is_banned ? 'Banned' : 'OK'}</td>
           <td>${joinDate}</td>
           <td>
             ${u.is_banned 
