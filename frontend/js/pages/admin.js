@@ -175,6 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
           text: `<strong>${escapeHtml(activity.username)}</strong> was banned`,
           type: 'user-banned'
         });
+      } else if (activity.action === 'unbanned') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '✅',
+          text: `<strong>${escapeHtml(activity.username)}</strong> was unbanned`,
+          type: 'user-unbanned'
+        });
       }
     });
 
@@ -697,9 +704,22 @@ document.addEventListener('DOMContentLoaded', () => {
           const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
           const idx = users.findIndex(u => u.id === btn.dataset.id);
           if (idx !== -1) {
+            const unbannedUser = users[idx];
             users[idx].is_banned = false;
             localStorage.setItem('demo_users', JSON.stringify(users));
+            
+            // Track unban activity
+            const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+            banActivity.push({
+              action: 'unbanned',
+              user_id: unbannedUser.id,
+              username: unbannedUser.username || unbannedUser.email,
+              time: new Date().toISOString()
+            });
+            localStorage.setItem('demo_ban_activity', JSON.stringify(banActivity));
+            
             loadUsers();
+            loadStats();
           }
         });
       });
