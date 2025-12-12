@@ -165,6 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Add ban activities
+    const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+    banActivity.forEach(activity => {
+      if (activity.action === 'banned') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '🚫',
+          text: `<strong>${escapeHtml(activity.username)}</strong> was banned`,
+          type: 'user-banned'
+        });
+      }
+    });
+
     // Sort by time (newest first)
     activities.sort((a, b) => b.time - a.time);
     allActivities = activities;
@@ -659,9 +672,23 @@ document.addEventListener('DOMContentLoaded', () => {
           const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
           const idx = users.findIndex(u => u.id === btn.dataset.id);
           if (idx !== -1) {
+            const bannedUser = users[idx];
             users[idx].is_banned = true;
+            users[idx].banned_at = new Date().toISOString();
             localStorage.setItem('demo_users', JSON.stringify(users));
+            
+            // Track ban activity
+            const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+            banActivity.push({
+              action: 'banned',
+              user_id: bannedUser.id,
+              username: bannedUser.username || bannedUser.email,
+              time: new Date().toISOString()
+            });
+            localStorage.setItem('demo_ban_activity', JSON.stringify(banActivity));
+            
             loadUsers();
+            loadStats();
           }
         });
       });
