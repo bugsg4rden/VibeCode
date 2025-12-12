@@ -30,9 +30,9 @@ async function loadRecentImages() {
     const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
     const approved = submissions.filter(s => s.status === 'approved');
     
-    // Sort by date (newest first) and take up to 12
+    // Sort by date (newest first) and take up to 14
     approved.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    const recent = approved.slice(0, 12);
+    const recent = approved.slice(0, 14);
     
     grid.innerHTML = '';
     
@@ -67,7 +67,7 @@ async function loadRecentImages() {
   
   // With backend API
   try {
-    const data = await apiGet('/search', { q: 'pose', limit: 12 });
+    const data = await apiGet('/search', { q: 'pose', limit: 14 });
     
     if (data.results && data.results.length > 0) {
       grid.innerHTML = '';
