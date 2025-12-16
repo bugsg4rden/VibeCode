@@ -11,23 +11,24 @@ if (typeof CONFIG !== 'undefined' && SUPABASE_CONFIGURED) {
 }
 
 async function register(email, password, username) {
-  // Check if Supabase is configured
-  if (!SUPABASE_CONFIGURED) {
-    // Demo mode - store locally
-    const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    if (users.find(u => u.email === email)) {
-      throw new Error('Email already registered');
-    }
-    users.push({ 
-      id: Date.now().toString(), 
-      email, 
-      password, 
-      username, 
-      role: users.length === 0 ? 'admin' : 'user' // First user is admin
-    });
-    localStorage.setItem('demo_users', JSON.stringify(users));
-    return { message: 'Registration successful' };
+  // Store user locally (will sync to Firebase)
+  const users = JSON.parse(localStorage.getItem('app_users') || '[]');
+  if (users.find(u => u.email === email)) {
+    throw new Error('Email already registered');
   }
+  
+  // Check if this is the admin email
+  const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
+  
+  users.push({ 
+    id: Date.now().toString(), 
+    email, 
+    password, 
+    username, 
+    role: isAdminEmail ? 'admin' : 'user'
+  });
+  localStorage.setItem('app_users', JSON.stringify(users));
+  return { message: 'Registration successful' };
 
   // Use backend API if configured
   if (CONFIG.API_URL) {
@@ -50,25 +51,26 @@ async function register(email, password, username) {
 }
 
 async function login(email, password) {
-  // Check if Supabase is configured
-  if (!SUPABASE_CONFIGURED) {
-    // Demo mode - check local storage
-    const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    if (!user) {
-      throw new Error('Invalid email or password');
-    }
-    const token = 'demo_token_' + user.id;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify({
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.role,
-      is_admin: user.role === 'admin'
-    }));
-    return { token, user };
+  // Check local storage for user
+  const users = JSON.parse(localStorage.getItem('app_users') || '[]');
+  const user = users.find(u => u.email === email && u.password === password);
+  if (!user) {
+    throw new Error('Invalid email or password');
   }
+  
+  // Check if this is the admin email (in case role wasn't set during registration)
+  const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
+  
+  const token = 'auth_token_' + user.id;
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify({
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    role: isAdminEmail ? 'admin' : user.role,
+    is_admin: isAdminEmail || user.role === 'admin'
+  }));
+  return { token, user };
 
   // Use backend API if configured
   if (CONFIG.API_URL) {
