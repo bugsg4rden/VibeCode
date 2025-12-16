@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     localStorage.removeItem('viewerImage');
+    // Navigate back to the page user came from
+    const returnUrl = localStorage.getItem('viewerReturnUrl') || 'search.html';
+    localStorage.removeItem('viewerReturnUrl');
+    window.location.href = returnUrl;
   }
 
   // Close button
@@ -201,22 +205,108 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return;
       }
-      // TODO: Open board selection modal
-      alert('Board selection coming soon!');
+
+      if (!currentImage) {
+        alert('No image to save');
+        return;
+      }
+
+      // Demo mode - show board selection
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const myBoards = boards.filter(b => b.user_id === user.id);
+
+        if (myBoards.length === 0) {
+          if (confirm('You have no boards yet. Would you like to go to your dashboard to create one?')) {
+            window.location.href = 'dashboard.html';
+          }
+          return;
+        }
+
+        // Build board selection prompt
+        let boardOptions = myBoards.map((b, i) => `${i + 1}. ${b.name}`).join('\n');
+        const choice = prompt(`Select a board to save this image to:\n\n${boardOptions}\n\nEnter the number:`);
+        
+        if (!choice) return;
+        
+        const index = parseInt(choice) - 1;
+        if (isNaN(index) || index < 0 || index >= myBoards.length) {
+          alert('Invalid selection');
+          return;
+        }
+
+        const selectedBoard = myBoards[index];
+        
+        // Check if image already in board
+        if (selectedBoard.images && selectedBoard.images.some(img => img.id === currentImage.id)) {
+          alert('This image is already in that board!');
+          return;
+        }
+
+        // Add image to board
+        const allBoards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const boardIndex = allBoards.findIndex(b => b.id === selectedBoard.id);
+        if (boardIndex !== -1) {
+          if (!allBoards[boardIndex].images) {
+            allBoards[boardIndex].images = [];
+          }
+          allBoards[boardIndex].images.push({
+            id: currentImage.id,
+            url: currentImage.url,
+            title: currentImage.title,
+            added_at: new Date().toISOString()
+          });
+          localStorage.setItem('demo_boards', JSON.stringify(allBoards));
+          alert(`Image saved to "${selectedBoard.name}"!`);
+        }
+        return;
+      }
+
+      // With backend API
+      try {
+        const data = await apiAuthGet('/boards');
+        if (!data.boards || data.boards.length === 0) {
+          alert('You have no boards. Create one in your dashboard first.');
+          return;
+        }
+        // For now, save to first board
+        await apiAuthPost(`/boards/${data.boards[0].id}/images`, {
+          image_url: currentImage.url,
+          title: currentImage.title
+        });
+        alert('Image saved to board!');
+      } catch (err) {
+        alert('Failed to save image to board');
+      }
     });
   }
 
   // Download image
   if (btnDownload) {
-    btnDownload.addEventListener('click', () => {
-      if (currentImage && currentImage.url) {
+    btnDownload.addEventListener('click', async () => {
+      if (!currentImage || !currentImage.url) return;
+      
+      const filename = (currentImage.title || 'reference').replace(/[^a-z0-9]/gi, '_') + '.jpg';
+      
+      try {
+        // Try to fetch and download as blob (works for most images)
+        const response = await fetch(currentImage.url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
         const a = document.createElement('a');
-        a.href = currentImage.url;
-        a.download = (currentImage.title || 'reference') + '.jpg';
-        a.target = '_blank';
+        a.href = blobUrl;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        // Fallback: open in new tab if fetch fails (CORS issues)
+        // User can right-click and save from there
+        alert('Unable to download directly due to the image source restrictions. The image will open in a new tab where you can right-click and save it.');
+        window.open(currentImage.url, '_blank');
       }
     });
   }
@@ -228,6 +318,25 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const reason = prompt('Why are you reporting this image? (e.g., inappropriate content, broken link, copyright issue)');
       if (!reason) return;
+
+      // Demo mode - store reports in localStorage
+      if (!CONFIG.API_URL) {
+        const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+        const report = {
+          id: Date.now(),
+          image_id: currentImage.id,
+          image_url: currentImage.url,
+          image_title: currentImage.title || 'Untitled',
+          reason: reason,
+          reported_by: getCurrentUser()?.id || 'anonymous',
+          reported_at: new Date().toISOString(),
+          status: 'pending'
+        };
+        reports.push(report);
+        localStorage.setItem('demo_reports', JSON.stringify(reports));
+        alert('Thank you for your report. We will review it shortly.');
+        return;
+      }
 
       try {
         await apiPost('/reports', {

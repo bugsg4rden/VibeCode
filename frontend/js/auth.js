@@ -23,7 +23,8 @@ async function register(email, password, username) {
       email, 
       password, 
       username, 
-      role: users.length === 0 ? 'admin' : 'user' // First user is admin
+      role: users.length === 0 ? 'admin' : 'user', // First user is admin
+      created_at: new Date().toISOString()
     });
     localStorage.setItem('demo_users', JSON.stringify(users));
     return { message: 'Registration successful' };
@@ -157,6 +158,15 @@ function updateAuthUI() {
 
 // Bind login form
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply saved accent color on all pages
+  const savedAccent = localStorage.getItem('accentColor');
+  if (savedAccent) {
+    document.documentElement.style.setProperty('--accent', savedAccent);
+    // Use black text only for white accent
+    const isWhite = savedAccent === '#FFFFFF';
+    document.documentElement.style.setProperty('--accent-text', isWhite ? '#000000' : '#FFFFFF');
+  }
+
   // Update auth UI on all pages
   updateAuthUI();
 

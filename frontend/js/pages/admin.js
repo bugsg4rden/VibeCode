@@ -51,6 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statSubmissions) statSubmissions.textContent = submissions.filter(s => s.status === 'approved').length;
       if (statPending) statPending.textContent = submissions.filter(s => s.status === 'pending').length;
       if (statReports) statReports.textContent = reports.filter(r => r.status === 'pending').length;
+      
+      // Load recent activity
+      loadRecentActivity(submissions, users, reports);
       return;
     }
 
@@ -63,6 +66,249 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  // Activity pagination state
+  const ACTIVITIES_PER_PAGE = 10;
+  let activityCurrentPage = 1;
+  let allActivities = [];
+
+  // Load recent activity
+  function loadRecentActivity(submissions, users, reports, page = 1) {
+    const activityList = document.getElementById('activity-list');
+    const activityPagination = document.getElementById('activity-pagination');
+    if (!activityList) return;
+
+    activityCurrentPage = page;
+
+    // Collect all activities with timestamps
+    const activities = [];
+
+    // Add submissions
+    submissions.forEach(sub => {
+      const user = users.find(u => u.id === sub.user_id);
+      const username = user ? user.username : 'Unknown user';
+      
+      if (sub.status === 'pending') {
+        activities.push({
+          time: new Date(sub.created_at),
+          icon: '📤',
+          text: `<strong>${escapeHtml(username)}</strong> submitted "${escapeHtml(sub.title)}"`,
+          type: 'submission'
+        });
+      } else if (sub.status === 'approved') {
+        activities.push({
+          time: new Date(sub.approved_at || sub.created_at),
+          icon: '✅',
+          text: `"${escapeHtml(sub.title)}" was approved`,
+          type: 'approved'
+        });
+      } else if (sub.status === 'rejected') {
+        activities.push({
+          time: new Date(sub.rejected_at || sub.created_at),
+          icon: '❌',
+          text: `"${escapeHtml(sub.title)}" was rejected`,
+          type: 'rejected'
+        });
+      }
+    });
+
+    // Add reports
+    reports.forEach(rep => {
+      activities.push({
+        time: new Date(rep.reported_at),
+        icon: '🚩',
+        text: `Image "${escapeHtml(rep.image_title || 'Untitled')}" was reported: ${escapeHtml(rep.reason)}`,
+        type: 'report'
+      });
+    });
+
+    // Add user registrations
+    users.forEach(user => {
+      if (user.created_at) {
+        activities.push({
+          time: new Date(user.created_at),
+          icon: '👤',
+          text: `<strong>${escapeHtml(user.username || user.email)}</strong> joined`,
+          type: 'user'
+        });
+      }
+    });
+
+    // Add public board creations and deletions
+    const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+    const boardActivity = JSON.parse(localStorage.getItem('demo_board_activity') || '[]');
+    
+    // Add existing public boards (created)
+    boards.forEach(board => {
+      if (board.is_public && board.created_at) {
+        const user = users.find(u => u.id === board.user_id);
+        const username = user ? user.username : 'Unknown user';
+        activities.push({
+          time: new Date(board.created_at),
+          icon: '📁',
+          text: `<strong>${escapeHtml(username)}</strong> created public board "${escapeHtml(board.name)}"`,
+          type: 'board-created'
+        });
+      }
+    });
+
+    // Add board deletion activities
+    boardActivity.forEach(activity => {
+      if (activity.action === 'deleted') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '🗑️',
+          text: `Public board "${escapeHtml(activity.board_name)}" was deleted`,
+          type: 'board-deleted'
+        });
+      }
+    });
+
+    // Add ban activities
+    const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+    banActivity.forEach(activity => {
+      if (activity.action === 'banned') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '🚫',
+          text: `<strong>${escapeHtml(activity.username)}</strong> was banned`,
+          type: 'user-banned'
+        });
+      } else if (activity.action === 'unbanned') {
+        activities.push({
+          time: new Date(activity.time),
+          icon: '✅',
+          text: `<strong>${escapeHtml(activity.username)}</strong> was unbanned`,
+          type: 'user-unbanned'
+        });
+      }
+    });
+
+    // Sort by time (newest first)
+    activities.sort((a, b) => b.time - a.time);
+    allActivities = activities;
+
+    const totalPages = Math.ceil(activities.length / ACTIVITIES_PER_PAGE);
+    
+    // Ensure current page is valid
+    if (activityCurrentPage > totalPages && totalPages > 0) {
+      activityCurrentPage = totalPages;
+    }
+    if (activityCurrentPage < 1) activityCurrentPage = 1;
+
+    // Get activities for current page
+    const startIndex = (activityCurrentPage - 1) * ACTIVITIES_PER_PAGE;
+    const endIndex = startIndex + ACTIVITIES_PER_PAGE;
+    const activitiesToShow = activities.slice(startIndex, endIndex);
+
+    // Render
+    activityList.innerHTML = '';
+    
+    if (activities.length === 0) {
+      activityList.innerHTML = '<li class="empty-activity">No recent activity</li>';
+      if (activityPagination) activityPagination.style.display = 'none';
+      return;
+    }
+
+    activitiesToShow.forEach(activity => {
+      const li = document.createElement('li');
+      li.className = 'activity-item';
+      const timeAgo = getTimeAgo(activity.time);
+      li.innerHTML = `
+        <span class="activity-icon">${activity.icon}</span>
+        <span class="activity-text">${activity.text}</span>
+        <span class="activity-time">${timeAgo}</span>
+      `;
+      activityList.appendChild(li);
+    });
+
+    // Render pagination
+    renderActivityPagination(totalPages);
+  }
+
+  function renderActivityPagination(totalPages) {
+    const activityPagination = document.getElementById('activity-pagination');
+    if (!activityPagination) return;
+
+    if (totalPages <= 1) {
+      activityPagination.style.display = 'none';
+      return;
+    }
+
+    activityPagination.style.display = 'flex';
+    
+    const prevBtn = activityPagination.querySelector('.activity-prev');
+    const nextBtn = activityPagination.querySelector('.activity-next');
+    const pageNumbers = activityPagination.querySelector('.activity-page-numbers');
+
+    if (prevBtn) prevBtn.disabled = activityCurrentPage === 1;
+    if (nextBtn) nextBtn.disabled = activityCurrentPage === totalPages;
+
+    if (pageNumbers) {
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'activity-page-num' + (i === activityCurrentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, i);
+        });
+        pageNumbers.appendChild(btn);
+      }
+    }
+  }
+
+  // Setup activity pagination event listeners
+  function setupActivityPagination() {
+    const activityPagination = document.getElementById('activity-pagination');
+    if (!activityPagination) return;
+
+    const prevBtn = activityPagination.querySelector('.activity-prev');
+    const nextBtn = activityPagination.querySelector('.activity-next');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (activityCurrentPage > 1) {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, activityCurrentPage - 1);
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(allActivities.length / ACTIVITIES_PER_PAGE);
+        if (activityCurrentPage < totalPages) {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          loadRecentActivity(submissions, users, reports, activityCurrentPage + 1);
+        }
+      });
+    }
+  }
+
+  setupActivityPagination();
+
+  // Helper to format time ago
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
   }
 
   // Load pending submissions
@@ -206,18 +452,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'review-card';
         card.innerHTML = `
+          <img src="${escapeHtml(rep.image_url)}" alt="Reported image">
           <div class="review-card-body">
-            <h4>Report: ${escapeHtml(rep.reason)}</h4>
-            <p>${escapeHtml(rep.description) || ''}</p>
-            <p>Reported ${new Date(rep.created_at).toLocaleDateString()}</p>
+            <h4>${escapeHtml(rep.image_title || 'Untitled')}</h4>
+            <p><strong>Reason:</strong> ${escapeHtml(rep.reason)}</p>
+            <p>Reported ${new Date(rep.reported_at).toLocaleDateString()}</p>
             <div class="review-card-actions">
-              <button class="btn btn-success btn-resolve" data-id="${rep.id}">Resolve</button>
-              <button class="btn btn-secondary btn-dismiss" data-id="${rep.id}">Dismiss</button>
+              <button class="btn btn-danger btn-remove-image" data-id="${rep.id}" data-image-id="${rep.image_id}">Remove Image</button>
+              <button class="btn btn-secondary btn-dismiss" data-id="${rep.id}">Dismiss Report</button>
             </div>
           </div>
         `;
         list.appendChild(card);
       });
+
+      // Attach event handlers for Demo Mode
+      list.querySelectorAll('.btn-remove-image').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reportId = parseInt(btn.dataset.id);
+          const imageId = btn.dataset.imageId; // Keep as string to match submission IDs
+          
+          // Remove the image from submissions
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const updatedSubmissions = submissions.filter(s => String(s.id) !== String(imageId));
+          localStorage.setItem('demo_submissions', JSON.stringify(updatedSubmissions));
+          
+          // Mark report as resolved
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          const updatedReports = reports.map(r => 
+            r.id === reportId ? { ...r, status: 'resolved' } : r
+          );
+          localStorage.setItem('demo_reports', JSON.stringify(updatedReports));
+          
+          loadReports();
+          loadStats();
+        });
+      });
+
+      list.querySelectorAll('.btn-dismiss').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reportId = parseInt(btn.dataset.id);
+          
+          // Mark report as dismissed
+          const reports = JSON.parse(localStorage.getItem('demo_reports') || '[]');
+          const updatedReports = reports.map(r => 
+            r.id === reportId ? { ...r, status: 'dismissed' } : r
+          );
+          localStorage.setItem('demo_reports', JSON.stringify(updatedReports));
+          
+          loadReports();
+          loadStats();
+        });
+      });
+
       return;
     }
 
@@ -290,10 +577,22 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><span class="badge badge-${escapeHtml(sub.status) === 'approved' ? 'success' : escapeHtml(sub.status) === 'rejected' ? 'danger' : 'warning'}">${escapeHtml(sub.status)}</span></td>
           <td>${new Date(escapeHtml(sub.created_at)).toLocaleDateString()}</td>
           <td>
+            <button class="btn btn-sm btn-edit btn-edit-sub" data-id="${sub.id}">Edit</button>
             <button class="btn btn-sm btn-danger btn-delete" data-id="${sub.id}">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
+      });
+
+      // Edit button handlers
+      tbody.querySelectorAll('.btn-edit-sub').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+          const sub = submissions.find(s => s.id === btn.dataset.id);
+          if (sub) {
+            openEditModal(sub);
+          }
+        });
       });
 
       tbody.querySelectorAll('.btn-delete').forEach(btn => {
@@ -357,12 +656,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       users.forEach(u => {
         const tr = document.createElement('tr');
+        const joinDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : '-';
         tr.innerHTML = `
           <td>${escapeHtml(u.username)}</td>
           <td>${escapeHtml(u.email)}</td>
           <td>${u.role}</td>
-          <td>${u.is_banned ? 'Banned' : 'Active'}</td>
-          <td>-</td>
+          <td>${u.is_banned ? 'Banned' : 'OK'}</td>
+          <td>${joinDate}</td>
           <td>
             ${u.is_banned 
               ? `<button class="btn btn-sm btn-success btn-unban" data-id="${u.id}">Unban</button>`
@@ -379,9 +679,23 @@ document.addEventListener('DOMContentLoaded', () => {
           const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
           const idx = users.findIndex(u => u.id === btn.dataset.id);
           if (idx !== -1) {
+            const bannedUser = users[idx];
             users[idx].is_banned = true;
+            users[idx].banned_at = new Date().toISOString();
             localStorage.setItem('demo_users', JSON.stringify(users));
+            
+            // Track ban activity
+            const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+            banActivity.push({
+              action: 'banned',
+              user_id: bannedUser.id,
+              username: bannedUser.username || bannedUser.email,
+              time: new Date().toISOString()
+            });
+            localStorage.setItem('demo_ban_activity', JSON.stringify(banActivity));
+            
             loadUsers();
+            loadStats();
           }
         });
       });
@@ -390,9 +704,22 @@ document.addEventListener('DOMContentLoaded', () => {
           const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
           const idx = users.findIndex(u => u.id === btn.dataset.id);
           if (idx !== -1) {
+            const unbannedUser = users[idx];
             users[idx].is_banned = false;
             localStorage.setItem('demo_users', JSON.stringify(users));
+            
+            // Track unban activity
+            const banActivity = JSON.parse(localStorage.getItem('demo_ban_activity') || '[]');
+            banActivity.push({
+              action: 'unbanned',
+              user_id: unbannedUser.id,
+              username: unbannedUser.username || unbannedUser.email,
+              time: new Date().toISOString()
+            });
+            localStorage.setItem('demo_ban_activity', JSON.stringify(banActivity));
+            
             loadUsers();
+            loadStats();
           }
         });
       });
@@ -404,12 +731,13 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = '';
       data.users.forEach(user => {
         const tr = document.createElement('tr');
+        const joinDate = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
         tr.innerHTML = `
           <td>${user.username}</td>
           <td>${user.email}</td>
           <td>${user.role}</td>
-          <td>${user.is_banned ? 'Banned' : 'Active'}</td>
-          <td>${new Date(user.created_at).toLocaleDateString()}</td>
+          <td>${user.is_banned ? 'Banned' : 'OK'}</td>
+          <td>${joinDate}</td>
           <td>
             ${user.is_banned 
               ? `<button class="btn-unban" data-id="${user.id}">Unban</button>`
@@ -436,6 +764,94 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  // Edit submission modal
+  const editModal = document.getElementById('edit-submission-modal');
+  const editForm = document.getElementById('edit-submission-form');
+  const cancelEditBtn = document.getElementById('cancel-edit-sub');
+
+  function openEditModal(submission) {
+    if (!editModal) return;
+    
+    // Populate form fields
+    document.getElementById('edit-sub-id').value = submission.id;
+    document.getElementById('edit-sub-title').value = submission.title || '';
+    document.getElementById('edit-sub-credits').value = submission.credits || '';
+    
+    // Clear all tag checkboxes first
+    editModal.querySelectorAll('input[name="tags"]').forEach(cb => {
+      cb.checked = false;
+    });
+    
+    // Check the tags that the submission has
+    if (submission.tags && Array.isArray(submission.tags)) {
+      submission.tags.forEach(tag => {
+        const checkbox = editModal.querySelector(`input[name="tags"][value="${tag}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+    
+    editModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeEditModal() {
+    if (editModal) editModal.setAttribute('aria-hidden', 'true');
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener('click', closeEditModal);
+  }
+
+  if (editModal) {
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal || e.target.classList.contains('modal-backdrop')) {
+        closeEditModal();
+      }
+    });
+  }
+
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const subId = document.getElementById('edit-sub-id').value;
+      const newTitle = document.getElementById('edit-sub-title').value.trim();
+      const newCredits = document.getElementById('edit-sub-credits').value.trim();
+      
+      // Collect selected tags
+      const selectedTags = [];
+      editModal.querySelectorAll('input[name="tags"]:checked').forEach(cb => {
+        selectedTags.push(cb.value);
+      });
+      
+      if (!newTitle) {
+        alert('Title cannot be empty');
+        return;
+      }
+      
+      // Demo mode - update in localStorage
+      if (!CONFIG.API_URL) {
+        const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+        const index = submissions.findIndex(s => s.id === subId);
+        
+        if (index !== -1) {
+          submissions[index].title = newTitle;
+          submissions[index].credits = newCredits;
+          submissions[index].tags = selectedTags;
+          localStorage.setItem('demo_submissions', JSON.stringify(submissions));
+          
+          closeEditModal();
+          loadAllSubmissions();
+          loadPending();
+          alert('Submission updated successfully!');
+        }
+        return;
+      }
+      
+      // With backend - would call API
+      alert('Backend edit not implemented');
+    });
   }
 
   // Initial load

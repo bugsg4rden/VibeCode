@@ -15,6 +15,7 @@
       <nav class="main-nav">
         <a href="index.html">Home</a>
         <a href="search.html" class="active">Browse</a>
+        <a href="boards.html">Boards</a>
         <a href="submit.html">Submit</a>
       </nav>
       <div class="auth-links" id="auth-links">
@@ -32,13 +33,13 @@
       <h3>Filters</h3>
       <label>Source</label>
       <select id="filter-source">
-        <option value="all">All</option>
         <option value="submissions">User Submissions</option>
       </select>
 
       <label>Reference Type</label>
       <select id="filter-type">
         <option value="">Any</option>
+        <option value="not-human">Not Human</option>
         <option value="full-body">Full Body</option>
         <option value="portrait">Portrait</option>
         <option value="expression">Expression</option>
@@ -109,6 +110,12 @@
 
       <div id="loading" class="loading" style="display:none;">Loading...</div>
       <div id="no-results" style="display:none;">No results found</div>
+      
+      <div id="search-pagination" class="search-pagination" style="display:none;">
+        <button id="search-prev" class="search-page-arrow" disabled>&larr; Prev</button>
+        <div id="search-page-numbers" class="search-page-numbers"></div>
+        <button id="search-next" class="search-page-arrow">Next &rarr;</button>
+      </div>
     </section>
   </main>
 
