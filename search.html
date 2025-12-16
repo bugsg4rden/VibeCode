@@ -15,6 +15,7 @@
       <nav class="main-nav">
         <a href="index.html">Home</a>
         <a href="search.html" class="active">Browse</a>
+        <a href="boards.html">Boards</a>
         <a href="submit.html">Submit</a>
       </nav>
       <div class="auth-links" id="auth-links">
@@ -32,20 +33,26 @@
       <h3>Filters</h3>
       <label>Source</label>
       <select id="filter-source">
-        <option value="all">All</option>
         <option value="submissions">User Submissions</option>
-        <option value="unsplash">Unsplash</option>
-        <option value="pexels">Pexels</option>
+      </select>
+
+      <label>Reference Type</label>
+      <select id="filter-type">
+        <option value="">Any</option>
+        <option value="not-human">Not Human</option>
+        <option value="full-body">Full Body</option>
+        <option value="portrait">Portrait</option>
+        <option value="expression">Expression</option>
+        <option value="hands">Hands</option>
       </select>
 
       <label>Lighting</label>
       <select id="filter-lighting">
         <option value="">Any</option>
-        <option value="top">Top</option>
-        <option value="bottom">Bottom</option>
-        <option value="side">Side</option>
-        <option value="front">Front</option>
-        <option value="back">Back</option>
+        <option value="natural">Natural</option>
+        <option value="studio">Studio</option>
+        <option value="dramatic">Dramatic</option>
+        <option value="backlit">Backlit</option>
       </select>
 
       <label>Gender</label>
@@ -53,29 +60,27 @@
         <option value="">Any</option>
         <option value="male">Male</option>
         <option value="female">Female</option>
+        <option value="neutral">Neutral</option>
       </select>
 
       <label>Body Type</label>
       <select id="filter-body">
         <option value="">Any</option>
-        <option value="triangle">Triangle</option>
-        <option value="inverted-triangle">Inverted Triangle</option>
-        <option value="hourglass">Hourglass</option>
-        <option value="oval-round">Oval / Round</option>
+        <option value="slim">Slim</option>
+        <option value="average">Average</option>
+        <option value="muscular">Muscular</option>
+        <option value="plus-size">Plus-size</option>
       </select>
 
       <label>Action</label>
       <select id="filter-action">
         <option value="">Any</option>
-        <option value="lying-down">Lying Down</option>
-        <option value="sitting">Sitting</option>
         <option value="standing">Standing</option>
-        <option value="walking">Walking</option>
+        <option value="sitting">Sitting</option>
         <option value="running">Running</option>
         <option value="jumping">Jumping</option>
-        <option value="climbing">Climbing</option>
-        <option value="fighting">Fighting</option>
-        <option value="dancing">Dancing</option>
+        <option value="lying">Lying</option>
+        <option value="stationary">Stationary</option>
       </select>
 
       <label>Camera Angle</label>
@@ -83,13 +88,14 @@
         <option value="">Any</option>
         <option value="front">Front</option>
         <option value="side">Side</option>
-        <option value="3-4">3/4</option>
         <option value="back">Back</option>
-        <option value="top-down">Top Down</option>
-        <option value="bottom-up">Bottom Up</option>
+        <option value="3/4">3/4</option>
+        <option value="high-angle">High Angle</option>
+        <option value="low-angle">Low Angle</option>
       </select>
 
-      <button id="apply-filters">Apply</button>
+      <button id="apply-filters">Apply Filters</button>
+      <button id="clear-filters">Clear All</button>
     </aside>
 
     <section class="results">
@@ -102,7 +108,14 @@
         <!-- results -->
       </div>
 
-      <div id="loading" class="loading">Loading...</div>
+      <div id="loading" class="loading" style="display:none;">Loading...</div>
+      <div id="no-results" style="display:none;">No results found</div>
+      
+      <div id="search-pagination" class="search-pagination" style="display:none;">
+        <button id="search-prev" class="search-page-arrow" disabled>&larr; Prev</button>
+        <div id="search-page-numbers" class="search-page-numbers"></div>
+        <button id="search-next" class="search-page-arrow">Next &rarr;</button>
+      </div>
     </section>
   </main>
 

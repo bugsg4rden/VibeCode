@@ -32,12 +32,12 @@ button{cursor:pointer}
 .quick-links button:hover{background:var(--surface);color:var(--text-primary)}
 
 /* Grid */
-.masonry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.masonry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
 
 /* Image Card */
-.image-card{background:var(--surface);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
+.image-card{background:var(--surface);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;aspect-ratio:1}
 .image-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
-.image-card img{display:block;width:100%;height:auto}
+.image-card img{display:block;width:100%;height:100%;object-fit:cover}
 
 /* Sections */
 .home-section{margin-top:48px;text-align:left}
@@ -55,9 +55,9 @@ button{cursor:pointer}
 .auth-form p a{color:var(--accent)}
 
 /* Buttons */
-.btn-primary{padding:10px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-weight:500}
+.btn-primary{padding:10px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-text);font-weight:500;cursor:pointer}
 .btn-primary:hover{opacity:0.9}
-.btn-secondary{padding:10px 20px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary)}
+.btn-secondary{padding:10px 20px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer}
 .btn-secondary:hover{background:var(--surface)}
 .btn-danger{background:var(--error) !important;color:#fff}
 

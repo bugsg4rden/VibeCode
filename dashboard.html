@@ -15,10 +15,11 @@
       <nav class="main-nav">
         <a href="index.html">Home</a>
         <a href="search.html">Browse</a>
+        <a href="boards.html">Boards</a>
         <a href="submit.html">Submit</a>
       </nav>
       <div class="user-menu">
-        <span id="user-name">Username</span>
+        <span id="username-display">Username</span>
         <button id="logout-btn">Log out</button>
       </div>
     </div>
@@ -32,7 +33,7 @@
         <button class="dash-tab" data-tab="settings">Settings</button>
       </nav>
     </aside>
-
+<!--help me they kidnapped my parents and im stuck in a basement oh my goh-->
     <section class="dash-content">
       <!-- My Boards -->
       <div class="tab-panel active" id="panel-boards">
@@ -68,14 +69,45 @@
 
       <!-- Settings -->
       <div class="tab-panel" id="panel-settings">
-        <h2>Account Settings</h2>
+        <h2>Profile</h2>
+        <p class="settings-description">Update your display name. This is how other users will see you.</p>
         <form id="settings-form" class="settings-form">
-          <label>Username</label>
-          <input type="text" id="settings-username">
-          <label>Email</label>
-          <input type="email" id="settings-email" disabled>
-          <button type="submit" class="btn-primary">Save Changes</button>
+          <label for="settings-username">Display Name</label>
+          <input type="text" id="settings-username" placeholder="Enter your display name">
+          
+          <label for="settings-email">Email Address</label>
+          <input type="email" id="settings-email" disabled title="Email cannot be changed">
+          <p class="settings-hint">Email address cannot be changed.</p>
+          
+          <button type="submit" class="btn btn-primary">Save Profile</button>
         </form>
+
+        <hr style="margin: 2rem 0; border-color: var(--border);">
+
+        <h2>Appearance</h2>
+        <p class="settings-description">Customize how RefSearch looks. Choose an accent color for buttons, links, and highlights.</p>
+        <div class="settings-form">
+          <label>Accent Color</label>
+          <div class="accent-color-options" id="accent-colors">
+            <button type="button" class="color-swatch" data-color="#0077ff" style="background:#0077ff;" title="Blue"></button>
+            <button type="button" class="color-swatch" data-color="#8B5CF6" style="background:#8B5CF6;" title="Purple"></button>
+            <button type="button" class="color-swatch" data-color="#EC4899" style="background:#EC4899;" title="Pink"></button>
+            <button type="button" class="color-swatch" data-color="#EF4444" style="background:#EF4444;" title="Red"></button>
+            <button type="button" class="color-swatch" data-color="#F59E0B" style="background:#F59E0B;" title="Orange"></button>
+            <button type="button" class="color-swatch" data-color="#22C55E" style="background:#22C55E;" title="Green"></button>
+            <button type="button" class="color-swatch" data-color="#14B8A6" style="background:#14B8A6;" title="Teal"></button>
+            <button type="button" class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF;" title="White"></button>
+          </div>
+          <p class="settings-hint">Your color choice is saved automatically and applies to all pages.</p>
+        </div>
+
+        <hr style="margin: 2rem 0; border-color: var(--border);">
+
+        <h2>Danger Zone</h2>
+        <div class="danger-zone">
+          <p>Permanently delete your account and all associated data including your boards and submissions. This action cannot be undone.</p>
+          <button type="button" id="delete-account-btn" class="btn btn-danger">Delete Account</button>
+        </div>
       </div>
     </section>
   </main>

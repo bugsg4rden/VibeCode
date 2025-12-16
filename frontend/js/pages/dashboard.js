@@ -12,6 +12,53 @@ document.addEventListener('DOMContentLoaded', () => {
     usernameEl.textContent = user.username || user.email;
   }
 
+  // Populate settings form
+  const settingsUsername = document.getElementById('settings-username');
+  const settingsEmail = document.getElementById('settings-email');
+  if (settingsUsername && user) settingsUsername.value = user.username || '';
+  if (settingsEmail && user) settingsEmail.value = user.email || '';
+
+  // Settings form submit
+  const settingsForm = document.getElementById('settings-form');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newUsername = settingsUsername.value.trim();
+      
+      if (!newUsername) {
+        alert('Display name cannot be empty');
+        return;
+      }
+
+      // Demo mode - update user in localStorage
+      if (!CONFIG.API_URL) {
+        const currentUser = getCurrentUser(); // Get fresh user data
+        const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        
+        if (userIndex !== -1) {
+          users[userIndex].username = newUsername;
+          localStorage.setItem('demo_users', JSON.stringify(users));
+          
+          // Update current session
+          const session = JSON.parse(localStorage.getItem('demo_session') || '{}');
+          session.username = newUsername;
+          localStorage.setItem('demo_session', JSON.stringify(session));
+          
+          // Update display
+          if (usernameEl) usernameEl.textContent = newUsername;
+          alert('Profile saved successfully!');
+        } else {
+          alert('Error: Could not find user. Please try logging in again.');
+        }
+        return;
+      }
+
+      // With backend - would call API
+      alert('Profile saved!');
+    });
+  }
+
   // Tab switching
   const tabs = document.querySelectorAll('.dash-tab');
   const panels = document.querySelectorAll('.tab-panel');
@@ -64,6 +111,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Demo mode - store boards in localStorage
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const newBoard = {
+          id: Date.now().toString(),
+          user_id: user.id,
+          name: name,
+          description: description,
+          is_public: is_public,
+          images: [],
+          created_at: new Date().toISOString()
+        };
+        boards.push(newBoard);
+        localStorage.setItem('demo_boards', JSON.stringify(boards));
+        modal.setAttribute('aria-hidden', 'true');
+        newBoardForm.reset();
+        loadBoards();
+        return;
+      }
+
       try {
         await apiAuthPost('/boards', { name, description, is_public });
         modal.setAttribute('aria-hidden', 'true');
@@ -79,6 +147,40 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadBoards() {
     const grid = document.getElementById('boards-grid');
     if (!grid) return;
+
+    // Demo mode - load from localStorage
+    if (!CONFIG.API_URL) {
+      const user = getCurrentUser();
+      const allBoards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+      const myBoards = allBoards.filter(b => b.user_id === user.id);
+      
+      grid.innerHTML = '';
+
+      if (myBoards.length === 0) {
+        grid.innerHTML = '<p class="empty-state">No boards yet. Create your first board!</p>';
+        return;
+      }
+
+      myBoards.forEach(board => {
+        const card = document.createElement('div');
+        card.className = 'board-card';
+        const coverImage = board.images && board.images.length > 0 
+          ? board.images[0].url 
+          : 'frontend/assets/images/placeholder1.jpg';
+        card.innerHTML = `
+          <img src="${escapeHtml(coverImage)}" alt="${escapeHtml(board.name)}">
+          <div class="board-card-body">
+            <h4>${escapeHtml(board.name)}</h4>
+            <span>${board.images ? board.images.length : 0} images</span>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          window.location.href = `board.html?id=${board.id}`;
+        });
+        grid.appendChild(card);
+      });
+      return;
+    }
 
     try {
       const data = await apiAuthGet('/boards');
@@ -115,6 +217,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('submissions-body');
     if (!tbody) return;
 
+    // Demo mode - load from localStorage
+    if (!CONFIG.API_URL) {
+      const user = getCurrentUser();
+      const allSubmissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+      const mySubmissions = allSubmissions.filter(s => s.user_id === user.id);
+      
+      tbody.innerHTML = '';
+      
+      if (mySubmissions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No submissions yet</td></tr>';
+        return;
+      }
+
+      mySubmissions.forEach(sub => {
+        const tr = document.createElement('tr');
+        const statusClass = sub.status === 'approved' ? 'badge-success' : 
+                           sub.status === 'rejected' ? 'badge-danger' : 'badge-pending';
+        tr.innerHTML = `
+          <td><img src="${escapeHtml(escapeHtml(sub.image_url))}" alt="${escapeHtml(sub.title)}" class="thumb" style="max-width:60px;max-height:60px;object-fit:cover;"></td>
+          <td>${escapeHtml(sub.title)}</td>
+          <td><span class="badge ${statusClass}">${escapeHtml(sub.status)}</span></td>
+          <td>${new Date(escapeHtml(sub.created_at)).toLocaleDateString()}</td>
+          <td><button class="btn btn-sm btn-danger btn-delete" data-id="${escapeHtml(sub.id)}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Add delete handlers for demo mode
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm('Are you sure you want to delete this submission?')) {
+            const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+            const filtered = submissions.filter(s => s.id !== btn.dataset.id);
+            localStorage.setItem('demo_submissions', JSON.stringify(filtered));
+            loadSubmissions();
+          }
+        });
+      });
+      return;
+    }
+
+    // With backend
     try {
       const data = await apiAuthGet('/submissions/my');
       tbody.innerHTML = '';
@@ -167,8 +312,81 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Accent color picker
+  const savedAccent = localStorage.getItem('accentColor') || '#0077ff';
+  applyAccentColor(savedAccent);
+  
+  function applyAccentColor(color) {
+    document.documentElement.style.setProperty('--accent', color);
+    // Use black text only for white accent
+    const isWhite = color === '#FFFFFF';
+    document.documentElement.style.setProperty('--accent-text', isWhite ? '#000000' : '#FFFFFF');
+  }
+  
+  const colorSwatches = document.querySelectorAll('.color-swatch');
+  colorSwatches.forEach(swatch => {
+    // Mark currently active color
+    if (swatch.dataset.color === savedAccent) {
+      swatch.classList.add('active');
+    }
+    
+    swatch.addEventListener('click', () => {
+      const color = swatch.dataset.color;
+      applyAccentColor(color);
+      localStorage.setItem('accentColor', color);
+      
+      // Update active state
+      colorSwatches.forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+    });
+  });
+
+  // Delete account
+  const deleteAccountBtn = document.getElementById('delete-account-btn');
+  if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener('click', () => {
+      const confirmText = prompt('This will permanently delete your account and all your data.\n\nType "DELETE" to confirm:');
+      if (confirmText !== 'DELETE') {
+        if (confirmText !== null) {
+          alert('Account deletion cancelled. You must type DELETE exactly.');
+        }
+        return;
+      }
+
+      // Demo mode - remove user data
+      if (!CONFIG.API_URL) {
+        const user = getCurrentUser();
+        if (!user) return;
+
+        // Remove user from users list
+        const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
+        const filteredUsers = users.filter(u => u.id !== user.id);
+        localStorage.setItem('demo_users', JSON.stringify(filteredUsers));
+
+        // Remove user's boards
+        const boards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
+        const filteredBoards = boards.filter(b => b.user_id !== user.id);
+        localStorage.setItem('demo_boards', JSON.stringify(filteredBoards));
+
+        // Remove user's submissions
+        const submissions = JSON.parse(localStorage.getItem('demo_submissions') || '[]');
+        const filteredSubmissions = submissions.filter(s => s.user_id !== user.id);
+        localStorage.setItem('demo_submissions', JSON.stringify(filteredSubmissions));
+
+        // Log out and redirect
+        logout();
+        alert('Your account has been deleted.');
+        return;
+      }
+
+      // With backend - would call API
+      alert('Account deletion requires backend support.');
+    });
+  }
+
   // Helper function to escape HTML
   function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
