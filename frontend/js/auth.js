@@ -9,18 +9,6 @@ async function register(email, password, username) {
     // Update display name
     await user.updateProfile({ displayName: username });
     
-    // Check if this is the admin email
-    const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
-    
-    // Store additional user data in Firestore
-    await db.collection('users').doc(user.uid).set({
-      email: email,
-      username: username,
-      role: isAdminEmail ? 'admin' : 'user',
-      is_admin: isAdminEmail,
-      created_at: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    
     // Sign out after registration (user needs to log in)
     await auth.signOut();
     
@@ -36,10 +24,6 @@ async function login(email, password) {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
     const user = userCredential.user;
     
-    // Get user data from Firestore
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    const userData = userDoc.exists ? userDoc.data() : {};
-    
     // Check if this is the admin email
     const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
     
@@ -47,9 +31,9 @@ async function login(email, password) {
     const userInfo = {
       id: user.uid,
       email: user.email,
-      username: userData.username || user.displayName || email.split('@')[0],
-      role: isAdminEmail ? 'admin' : (userData.role || 'user'),
-      is_admin: isAdminEmail || userData.is_admin || false
+      username: user.displayName || email.split('@')[0],
+      role: isAdminEmail ? 'admin' : 'user',
+      is_admin: isAdminEmail
     };
     
     localStorage.setItem('token', await user.getIdToken());
