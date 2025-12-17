@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = getCurrentUser();
       titleEl.textContent = currentBoard.name;
       descEl.textContent = currentBoard.description || '';
-      ownerEl.textContent = `by ${user ? user.username : 'Unknown'}`;
+      ownerEl.textContent = `by ${currentBoard.owner_name || 'Unknown'}`;
       visibilityEl.textContent = currentBoard.is_public ? 'Public' : 'Private';
       countEl.textContent = `${currentBoard.images?.length || 0} images`;
 

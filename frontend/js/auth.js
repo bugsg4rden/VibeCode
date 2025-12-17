@@ -6,8 +6,11 @@ async function register(email, password, username) {
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
     const user = userCredential.user;
     
-    // Update display name
+    // Update display name and wait for it to complete
     await user.updateProfile({ displayName: username });
+    
+    // Reload user to ensure displayName is set
+    await user.reload();
     
     // Sign out after registration (user needs to log in)
     await auth.signOut();
@@ -22,7 +25,11 @@ async function login(email, password) {
   try {
     // Sign in with Firebase Auth
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    const user = userCredential.user;
+    let user = userCredential.user;
+    
+    // Reload user to get latest profile data
+    await user.reload();
+    user = auth.currentUser;
     
     // Check if this is the admin email
     const isAdminEmail = email === CONFIG.ADMIN_EMAIL;

@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Demo mode - load from localStorage
     if (!CONFIG.API_URL) {
       const allBoards = JSON.parse(localStorage.getItem('demo_boards') || '[]');
-      const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
       const currentUser = getCurrentUser();
       const isAdmin = currentUser && currentUser.role === 'admin';
 
@@ -40,8 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         publicBoards = publicBoards.filter(b => {
-          const user = users.find(u => u.id === b.user_id);
-          const username = user ? user.username : '';
+          const username = b.owner_name || '';
           return b.name.toLowerCase().includes(query) || 
                  username.toLowerCase().includes(query);
         });
@@ -72,8 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (noBoards) noBoards.style.display = 'none';
 
       boardsToShow.forEach(board => {
-        const user = users.find(u => u.id === board.user_id);
-        const username = user ? (user.username || user.email) : 'Unknown';
+        const username = board.owner_name || 'Unknown';
         const imageCount = board.images ? board.images.length : 0;
 
         // Get up to 4 preview images

@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newBoard = {
           id: Date.now().toString(),
           user_id: user.id,
+          owner_name: user.username || user.email,
           name: name,
           description: description,
           is_public: is_public,
