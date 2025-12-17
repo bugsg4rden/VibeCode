@@ -1,129 +1,72 @@
-// Auth helper functions
-// Can work with Supabase directly OR with backend API
-
-// Initialize Supabase client if configured
-let supabaseClient = null;
-if (typeof CONFIG !== 'undefined' && SUPABASE_CONFIGURED) {
-  // Load Supabase from CDN - will be added to HTML
-  if (typeof supabase !== 'undefined') {
-    supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-  }
-}
+// Auth helper functions using Firebase Authentication
 
 async function register(email, password, username) {
-<<<<<<< HEAD
-  // Store user locally (will sync to Firebase)
-  const users = JSON.parse(localStorage.getItem('app_users') || '[]');
-  if (users.find(u => u.email === email)) {
-    throw new Error('Email already registered');
-=======
-  // Check if Supabase is configured
-  if (!SUPABASE_CONFIGURED) {
-    // Demo mode - store locally
-    const users = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    if (users.find(u => u.email === email)) {
-      throw new Error('Email already registered');
-    }
-    users.push({ 
-      id: Date.now().toString(), 
-      email, 
-      password, 
-      username, 
-      role: users.length === 0 ? 'admin' : 'user', // First user is admin
-      created_at: new Date().toISOString()
+  try {
+    // Create user with Firebase Auth
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+    
+    // Update display name
+    await user.updateProfile({ displayName: username });
+    
+    // Check if this is the admin email
+    const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
+    
+    // Store additional user data in Firestore
+    await db.collection('users').doc(user.uid).set({
+      email: email,
+      username: username,
+      role: isAdminEmail ? 'admin' : 'user',
+      is_admin: isAdminEmail,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
-    localStorage.setItem('demo_users', JSON.stringify(users));
+    
+    // Sign out after registration (user needs to log in)
+    await auth.signOut();
+    
     return { message: 'Registration successful' };
->>>>>>> ffd8aec06c85cb730ce453c0c739e47e62ff4b44
+  } catch (error) {
+    throw new Error(error.message);
   }
-  
-  // Check if this is the admin email
-  const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
-  
-  users.push({ 
-    id: Date.now().toString(), 
-    email, 
-    password, 
-    username, 
-    role: isAdminEmail ? 'admin' : 'user'
-  });
-  localStorage.setItem('app_users', JSON.stringify(users));
-  return { message: 'Registration successful' };
-
-  // Use backend API if configured
-  if (CONFIG.API_URL) {
-    const res = await fetch(CONFIG.API_URL + '/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, username })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Registration failed');
-    }
-    return res.json();
-  }
-
-  // Direct Supabase auth
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) throw new Error(error.message);
-  return data;
 }
 
 async function login(email, password) {
-  // Check local storage for user
-  const users = JSON.parse(localStorage.getItem('app_users') || '[]');
-  const user = users.find(u => u.email === email && u.password === password);
-  if (!user) {
-    throw new Error('Invalid email or password');
+  try {
+    // Sign in with Firebase Auth
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+    
+    // Get user data from Firestore
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+    
+    // Check if this is the admin email
+    const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
+    
+    // Store user info locally for quick access
+    const userInfo = {
+      id: user.uid,
+      email: user.email,
+      username: userData.username || user.displayName || email.split('@')[0],
+      role: isAdminEmail ? 'admin' : (userData.role || 'user'),
+      is_admin: isAdminEmail || userData.is_admin || false
+    };
+    
+    localStorage.setItem('token', await user.getIdToken());
+    localStorage.setItem('user', JSON.stringify(userInfo));
+    
+    return { token: localStorage.getItem('token'), user: userInfo };
+  } catch (error) {
+    throw new Error(error.message);
   }
-  
-  // Check if this is the admin email (in case role wasn't set during registration)
-  const isAdminEmail = email === CONFIG.ADMIN_EMAIL;
-  
-  const token = 'auth_token_' + user.id;
-  localStorage.setItem('token', token);
-  localStorage.setItem('user', JSON.stringify({
-    id: user.id,
-    email: user.email,
-    username: user.username,
-    role: isAdminEmail ? 'admin' : user.role,
-    is_admin: isAdminEmail || user.role === 'admin'
-  }));
-  return { token, user };
-
-  // Use backend API if configured
-  if (CONFIG.API_URL) {
-    const res = await fetch(CONFIG.API_URL + '/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Login failed');
-    }
-    const data = await res.json();
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
-    return data;
-  }
-
-  // Direct Supabase auth
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message);
-  localStorage.setItem('token', data.session.access_token);
-  localStorage.setItem('user', JSON.stringify({
-    id: data.user.id,
-    email: data.user.email,
-    is_admin: false
-  }));
-  return data;
 }
 
-function logout() {
+async function logout() {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = 'login.html';
